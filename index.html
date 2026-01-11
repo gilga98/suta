@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SŪTA</title>
+    <!-- Fonts: Outfit for Modern Look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind + DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#ff385c', // Airbnb Red-ish
+                        secondary: '#222222', // Airbnb Dark
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #f7f7f7; }
+        .chart-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 70px); gap: 1px; background: #cbd5e1; border: 1px solid #e2e8f0; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; }
+        .chart-cell { background: white; position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; font-size: 0.70rem; padding: 2px; transition: background 0.2s; }
+        .chart-cell:hover { background: #f8fafc; }
+        .chart-center { grid-column: 2 / span 2; grid-row: 2 / span 2; background: #fdfdfd; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .planet-glyph { font-weight: 600; margin: 1px; padding: 2px 4px; border-radius: 4px; font-size: 0.7rem; }
+        .planet-Ascendant { color: #ff385c; background: #fff1f2; }
+        .planet-Sun { color: #d97706; }
+        .planet-Moon { color: #0f172a; }
+        .planet-Mars { color: #b91c1c; }
+        .planet-Mercury { color: #059669; }
+        .planet-Jupiter { color: #d97706; }
+        .planet-Venus { color: #7c3aed; }
+        .planet-Saturn { color: #1e293b; }
+        .planet-Rahu { color: #4b5563; }
+        .planet-Ketu { color: #4b5563; }
+        
+        #loader { position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 50; display: flex; justify-content: center; align-items: center; }
+        #loader.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        
+        /* Custom Scrollbar for tables */
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        
+        /* Input Transitions */
+        .input-group:focus-within label { color: #ff385c; }
+
+        /* Input Transitions */
+        .input-group:focus-within label { color: #ff385c; }
+    </style>
+</head>
+<body class="text-secondary antialiased min-h-screen flex flex-col">
+
+    <!-- LOADER -->
+    <div id="loader">
+        <div class="flex flex-col items-center gap-4">
+            <span class="loading loading-dots loading-lg text-primary"></span>
+            <div class="text-center">
+                <h3 class="text-xl font-bold tracking-tight">SŪTA</h3>
+                <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Loading Ephemeris Data</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="bg-white border-b border-gray-100 sticky top-0 z-40 transform transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🕉️</span>
+                <span class="font-bold text-lg tracking-tight">SŪTA</span>
+            </div>
+            <div class="flex items-center gap-4">
+               <button class="btn btn-ghost btn-circle btn-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+               </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="flex-grow p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto flex flex-col gap-8">
+
+        <!-- INPUT SECTION (HERO) -->
+        <section id="input-section" class="w-full transition-all duration-500 ease-in-out mx-auto max-w-3xl">
+            <div class="card bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+                <div class="card-body p-6 sm:p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-pink-600">Enter Birth Details</h1>
+                        <p class="text-gray-500 text-sm mt-1">Accurate calculations span 5000+ years</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Col: Basics -->
+                        <div class="space-y-4">
+                            <div class="form-control w-full input-group">
+                                <label class="label pb-1"><span class="label-text text-xs font-bold uppercase text-gray-400 tracking-wider">Name</span></label>
+                                <input type="text" id="name" placeholder="Name" class="input input-bordered w-full rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                            </div>
+                            
+                            <div class="form-control w-full input-group">
+                                <label class="label pb-1"><span class="label-text text-xs font-bold uppercase text-gray-400 tracking-wider">Date of Birth</span></label>
+                                <input type="date" id="dob" class="input input-bordered w-full rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-gray-700" />
+                            </div>
+
+                            <div class="form-control w-full input-group">
+                                <label class="label pb-1"><span class="label-text text-xs font-bold uppercase text-gray-400 tracking-wider">Time of Birth</span></label>
+                                <input type="time" id="tob" step="1" class="input input-bordered w-full rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-gray-700" />
+                            </div>
+                        </div>
+
+                        <!-- Right Col: Location & Settings -->
+                        <div class="space-y-4">
+                             <div class="form-control w-full input-group relative">
+                                <label class="label pb-1"><span class="label-text text-xs font-bold uppercase text-gray-400 tracking-wider">Place of Birth</span></label>
+                                <input type="text" id="citySearch" list="cityList" class="input input-bordered w-full rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-10" placeholder="Search City..." disabled />
+                                <div class="absolute right-3 top-9 text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                </div>
+                                <datalist id="cityList"></datalist>
+                                <!-- HIDDEN FIELDS AUTO-POPULATED -->
+                                <input type="hidden" id="selectedLat">
+                                <input type="hidden" id="selectedLng">
+                                <input type="hidden" id="timezone">
+                            </div>
+                            
+                            <!-- Expandable Settings -->
+                            <div class="collapse collapse-arrow border border-gray-100 rounded-xl bg-gray-50 mt-2">
+                                <input type="checkbox" /> 
+                                <div class="collapse-title text-xs font-bold text-gray-500">Advanced Settings</div>
+                                <div class="collapse-content space-y-3"> 
+                                    <div>
+                                        <label class="label py-1"><span class="label-text text-xs">Ayanamsa</span></label>
+                                        <select id="ayaMode" class="select select-bordered select-xs w-full rounded-lg">
+                                            <option value="27" selected>True Chitrapaksha</option>
+                                            <option value="1">Lahiri (Traditional)</option>
+                                            <option value="5">KP (Krishnamurti)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="label py-1"><span class="label-text text-xs">Positions</span></label>
+                                        <select id="calcMode" class="select select-bordered select-xs w-full rounded-lg">
+                                            <option value="16" selected>True Geometric</option>
+                                            <option value="0">Apparent</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <button id="calcBtn" onclick="generateChart()" class="btn btn-primary w-full rounded-xl text-white text-lg font-normal tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all" disabled>
+                            Generate Horoscope
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- OUTPUT SECTION (DASHBOARD) -->
+        <section id="output" class="hidden w-full transition-opacity duration-700 opacity-0">
+            
+             <!-- DASHBOARD GRID -->
+             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                 
+                 <!-- LEFT COLUMN: CHARTS (Sticky on Desktop) -->
+                 <div class="lg:col-span-4 flex flex-col gap-6">
+                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-4 sticky top-24">
+                         <div role="tablist" class="tabs tabs-boxed bg-gray-100 p-1 rounded-xl mb-4">
+                             <a role="tab" class="tab tab-active rounded-lg transition-all" onclick="switchChartTab('d1', this)">Rashi (D1)</a>
+                             <a role="tab" class="tab rounded-lg transition-all" onclick="switchChartTab('d9', this)">Navamsa</a>
+                         </div>
+                         
+                         <div id="chart-container-d1" class="chart-view">
+                             <div class="chart-grid" id="chart-d1"></div>
+                         </div>
+                         <div id="chart-container-d9" class="chart-view hidden">
+                             <div class="chart-grid" id="chart-d9"></div>
+                         </div>
+
+                         <!-- Basic Vitals Below Chart -->
+                         <div class="mt-6 flex justify-between items-center px-2">
+                             <div class="text-center">
+                                 <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Lagna</div>
+                                 <div class="text-xl font-medium text-primary" id="val-ascDesc">-</div>
+                                 <div class="text-xs font-mono text-gray-500" id="val-ascDeg">-</div>
+                             </div>
+                             <div class="divider divider-horizontal mx-0"></div>
+                             <div class="text-center">
+                                 <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Moon Sign</div>
+                                 <div class="text-xl font-medium text-secondary" id="val-moonSign">-</div>
+                                 <div class="text-xs text-gray-500" id="val-moonNak">-</div>
+                             </div>
+                         </div>
+                     </div>
+                     
+                     <!-- PANCHANGA CARD -->
+                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-4">
+                         <h3 class="font-bold text-gray-800 mb-3 px-2">Panchanga</h3>
+                         <div class="overflow-x-auto">
+                             <table class="table table-sm text-xs">
+                                 <tbody>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="text-gray-400 font-medium">Tithi</td>
+                                         <td class="font-semibold text-right" id="pan-tithi">-</td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="text-gray-400 font-medium">Vara</td>
+                                         <td class="font-semibold text-right" id="pan-vara">-</td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="text-gray-400 font-medium">Nakshatra</td>
+                                         <td class="font-semibold text-right" id="pan-nak">-</td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="text-gray-400 font-medium">Yoga</td>
+                                         <td class="font-semibold text-right" id="pan-yoga">-</td>
+                                     </tr>
+                                     <tr>
+                                         <td class="text-gray-400 font-medium">Karana</td>
+                                         <td class="font-semibold text-right" id="pan-karana">-</td>
+                                     </tr>
+                                 </tbody>
+                             </table>
+                         </div>
+                     </div>
+                 </div>
+
+                     <!-- RIGHT COLUMN: DETAILED DATA -->
+                 <div class="lg:col-span-8 flex flex-col gap-8">
+                     
+                     <!-- PLANETARY POSITIONS -->
+                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-6">
+                         <h3 class="font-bold text-xl mb-6 text-gray-800 border-b pb-2">Planetary Positions</h3>
+                         <div class="overflow-x-auto custom-scroll">
+                             <table class="table w-full text-center">
+                                 <thead>
+                                     <tr class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider">
+                                         <th class="rounded-l-lg py-4">Planet</th>
+                                         <th class="py-4">Rashi</th>
+                                         <th class="py-4">Degree</th>
+                                         <th class="py-4">Nakshatra</th>
+                                         <th class="py-4">Pada</th>
+                                         <th class="py-4">Lord</th>
+                                         <th class="rounded-r-lg py-4">Status</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody id="planet-detail-body" class="text-sm"></tbody>
+                             </table>
+                         </div>
+                     </div>
+
+                     <!-- DASHA & STRENGTH -->
+                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-6">
+                         <h3 class="font-bold text-xl mb-6 text-gray-800 border-b pb-2">Dasha & Strength</h3>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                             <div>
+                                 <h4 class="font-bold text-lg mb-4 text-gray-600">Vimshottari Dasha</h4>
+                                 <div class="overflow-x-auto h-96 custom-scroll border border-gray-100 rounded-lg">
+                                    <table class="table table-pin-rows table-zebra w-full">
+                                        <thead><tr class="bg-gray-50 text-gray-500"><th>Lord</th><th>Start</th><th>End</th><th>Dur</th></tr></thead>
+                                        <tbody id="dasha-body"></tbody>
+                                    </table>
+                                </div>
+                             </div>
+                             <div>
+                                 <h4 class="font-bold text-lg mb-4 text-gray-600">Shadbala Strength</h4>
+                                 <div class="overflow-x-auto h-96 custom-scroll border border-gray-100 rounded-lg">
+                                    <table class="table table-pin-rows table-zebra w-full text-center">
+                                        <thead><tr class="bg-gray-50 text-gray-500"><th>Planet</th><th>Total</th><th>Rel</th></tr></thead>
+                                        <tbody id="shadbala-body"></tbody>
+                                    </table>
+                                </div>
+                             </div>
+                         </div>
+                     </div>
+
+                     <!-- KP SYSTEM -->
+                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-6">
+                        <h3 class="font-bold text-xl mb-6 text-gray-800 border-b pb-2">KP System</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <div class="badge badge-primary badge-outline mb-3 font-medium">House Cusps</div>
+                                <div class="overflow-x-auto max-h-96 custom-scroll border rounded-lg">
+                                    <table class="table table-zebra table-pin-rows">
+                                        <thead><tr class="bg-gray-50"><th>Cusp</th><th>Sign</th><th>Deg</th><th>SgnL</th><th>StrL</th><th>SubL</th></tr></thead>
+                                        <tbody id="kp-cusp-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="badge badge-secondary badge-outline mb-3 font-medium">Planetary Signification</div>
+                                <div class="overflow-x-auto max-h-96 custom-scroll border rounded-lg">
+                                    <table class="table table-zebra table-pin-rows">
+                                        <thead><tr class="bg-gray-50"><th>Pl</th><th>Deg</th><th>SgnL</th><th>StrL</th><th>SubL</th></tr></thead>
+                                        <tbody id="kp-planet-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ANALYSIS -->
+                    <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-6">
+                        <h3 class="font-bold text-xl mb-6 text-gray-800 border-b pb-2">Detailed Analysis</h3>
+                        <div class="space-y-8">
+                            <!-- Doshas -->
+                            <div class="p-6 bg-gray-50 rounded-xl border border-gray-100">
+                                <h4 class="font-bold text-sm uppercase text-gray-400 mb-4 tracking-wider">Dosha Analysis</h4>
+                                <div class="flex flex-wrap gap-4" id="dosha-container"></div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <h4 class="font-bold text-lg mb-4 text-gray-600">Avkahada Chakra</h4>
+                                    <table class="table border rounded-lg bg-white">
+                                        <tbody id="avkahada-body"></tbody>
+                                    </table>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-4 text-gray-600">Jaimini Karakas</h4>
+                                    <table class="table border rounded-lg bg-white">
+                                        <thead><tr class="bg-gray-50"><th>Karaka</th><th>Planet</th><th>Deg</th></tr></thead>
+                                        <tbody id="jaimini-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                 </div>
+             </div>
+        </section>
+
+         <!-- DATA & NARRATION SECTION -->
+         <section id="data-export-section" class="w-full transition-all duration-500 ease-in-out hidden">
+             <div class="card bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+                 <div class="card-body p-6 sm:p-8">
+                     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                         <h2 class="text-2xl font-bold text-gray-800">Data & Narration</h2>
+                         <div class="flex items-center gap-4">
+                             <!-- Toggle -->
+                             <label class="cursor-pointer label gap-2">
+                                 <span class="label-text font-bold text-gray-500">JSON</span> 
+                                 <input type="checkbox" class="toggle toggle-primary" id="viewToggle" onchange="toggleDataView()" checked />
+                                 <span class="label-text font-bold text-gray-500">Verbal</span> 
+                             </label>
+                             <!-- Copy Button -->
+                             <button class="btn btn-outline btn-sm gap-2" onclick="copyDataToClipboard()">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                                 Copy
+                             </button>
+                         </div>
+                     </div>
+
+                     <!-- Content Container -->
+                     <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 relative max-h-[600px] overflow-y-auto custom-scroll">
+                         <!-- JSON VIEW -->
+                         <pre id="json-view" class="text-xs font-mono text-gray-700 whitespace-pre-wrap hidden"></pre>
+                         <!-- VERBAL CONTENT VIEW -->
+                         <div id="verbal-view" class="prose prose-sm max-w-none text-gray-700 leading-relaxed space-y-4"></div>
+                     </div>
+                 </div>
+             </div>
+         </section>
+    </main>
+
+    <!-- SCRIPTS -->
+    <script type="module">
+        import astroEngine from './VedicAstroEngine.js';
+        import jyotishTools from './JyotishTools.js';
+
+        let cityData = [];
+
+        window.onload = async () => {
+            try {
+                // Initialize Engine
+                await astroEngine.init();
+                
+                const loader = document.getElementById('loader');
+                loader.classList.add('hidden');
+                
+                document.getElementById('calcBtn').disabled = false;
+
+                // Load City Data
+                const res = await fetch('./cityData.json');
+                cityData = await res.json();
+                
+                const cityInput = document.getElementById('citySearch');
+                cityInput.disabled = false;
+                cityInput.placeholder = "Search City (e.g. Mumbai, New York)";
+                
+                const datalist = document.getElementById('cityList');
+                // Optimization: Don't load all 40k cities into DOM. Simple search already works via input event logic below?
+                // Actually the original code loaded slice 0-5000. 
+                // Let's load a reasonable amount or rely on JS filtering to avoid DOM freeze.
+                // For 'datalist', keeping it small is better.
+                // We'll update datalist dynamically maybe?
+                // For now, let's just stick to original logic but maybe bump slice if needed, or keeping 5000 is fine.
+                cityData.slice(0, 15000).forEach(city => {
+                    const opt = document.createElement('option');
+                    opt.value = `${city.city}, ${city.country}`;
+                    datalist.appendChild(opt);
+                });
+
+            } catch (e) {
+                console.error(e);
+                alert("Init Failed: " + e.message);
+            }
+        };
+        
+        // Datalist Dynamic Update (Optional Optimization for large lists)
+        document.getElementById('citySearch').addEventListener('input', (e) => {
+             const val = e.target.value;
+             // Auto-populate hidden fields if exact match
+             const found = cityData.find(c => `${c.city}, ${c.country}` === val);
+             if (found) {
+                 document.getElementById('selectedLat').value = found.lat;
+                 document.getElementById('selectedLng').value = found.lng;
+                 
+                 // AUTO TIMEZONE LOGIC
+                 // We have found.timezone (IANA string e.g. "Asia/Kolkata")
+                 document.getElementById('timezone').value = found.timezone || "Asia/Kolkata";
+                 console.log("Selected City:", found.city, "Timezone:", found.timezone);
+             }
+        });
+
+        window.generateChart = () => {
+             const dateStr = document.getElementById('dob').value;
+             const timeStr = document.getElementById('tob').value;
+             // Timezone is now a STRING (IANA)
+             const tzString = document.getElementById('timezone').value;
+             const lat = parseFloat(document.getElementById('selectedLat').value);
+             const lng = parseFloat(document.getElementById('selectedLng').value);
+             const ayaMode = parseInt(document.getElementById('ayaMode').value);
+             const calcMode = parseInt(document.getElementById('calcMode').value);
+
+             if(!dateStr || !timeStr || isNaN(lat)) { 
+                 alert("Please enter all details including a valid city."); 
+                 return; 
+             }
+             
+             // Calculate Numeric Offset from IANA string
+             const tzOffset = getOffsetFromIANA(tzString, dateStr, timeStr);
+             console.log("Calculated Offset for", tzString, "is", tzOffset);
+
+             try {
+                const button = document.getElementById('calcBtn');
+                button.classList.add('loading');
+                
+                setTimeout(() => {
+                    // Main Calc
+                    const d1Result = astroEngine.calculate(dateStr, timeStr, tzOffset, lat, lng, {
+                        ayanamsaMode: ayaMode,
+                        calcModeFlag: calcMode,
+                        houseSystem: 'P' 
+                    });
+                    
+                    const kpResult = astroEngine.calculate(dateStr, timeStr, tzOffset, lat, lng, {
+                         ayanamsaMode: ayaMode,
+                         calcModeFlag: calcMode,
+                         houseSystem: 'P'
+                    });
+
+                    d1Result.planets.forEach(p => {
+                        p.vargas = {
+                             d1: jyotishTools.getVargaPosition(p.longitude, 1),
+                             d9: jyotishTools.getVargaPosition(p.longitude, 9)
+                        };
+                    });
+
+                    const moonObj = d1Result.planets.find(p => p.name === "Moon");
+                    const dashas = jyotishTools.calculateVimshottari(moonObj.longitude, dateStr);
+
+                    const kpData = {
+                        planets: kpResult.planets.map(p => ({ ...p, kp: jyotishTools.getKPLords(p.longitude) })),
+                        cusps: kpResult.houses.houses.map((deg, idx) => {
+                            const hNum = idx; 
+                            if (hNum === 0) return null; 
+                            return { id: hNum, dms: astroEngine.decimalToDMS(deg), kp: jyotishTools.getKPLords(deg) };
+                        }).filter(x => x!==null)
+                    };
+
+                    const shadbala = jyotishTools.calculateShadbala(d1Result.planets);
+                    const jaimini = jyotishTools.calculateJaimini(d1Result.planets);
+                    const doshas = jyotishTools.checkDoshas(d1Result.planets);
+                    const avkahada = jyotishTools.getAvkahada(moonObj.longitude);
+                    const ashtakvarga = jyotishTools.calculateAshtakvarga(d1Result.planets);
+
+                    renderDashboard(d1Result, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga);
+                    
+                    button.classList.remove('loading');
+                    // Scroll to Output
+                    document.getElementById('output').classList.remove('hidden');
+                    setTimeout(() => {
+                         document.getElementById('output').classList.remove('opacity-0');
+                         document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                    
+                }, 50); // Small delay for UI update
+
+             } catch(e) {
+                 console.error(e);
+                 alert("Calc Error: " + e.message);
+                 document.getElementById('calcBtn').classList.remove('loading');
+             }
+        };
+        
+        function getOffsetFromIANA(timeZone, dateStr, timeStr) {
+            try {
+                // "Asia/Kolkata", "2000-01-01", "12:00"
+                // Construct date string for Intl
+                const dt = new Date(`${dateStr}T${timeStr}`);
+                
+                // Get timezone specific string
+                // options: timeZoneName: 'longOffset' returns "GMT+05:30"
+                const str = dt.toLocaleString('en-US', { timeZone: timeZone, timeZoneName: 'longOffset' });
+                
+                // Check if result has GMT or UTC
+                const match = str.match(/GMT([+-]\d{2}):(\d{2})/);
+                if (match) {
+                    const hours = parseInt(match[1]);
+                    const minutes = parseInt(match[2]);
+                    const sign = hours < 0 ? -1 : 1;
+                    // Note: match[1] includes sign. parseInt("-05") is -5.
+                    // If hours is -5, we subtract minutes? No. -5:30 means -(5 + 30/60).
+                    // Logic: Absolute hours + minutes/60, then apply sign.
+                    // Actually, if string is GMT-05:30. hours = -5. minutes = 30.
+                    // We want -5.5.
+                    // Math.abs(hours) + minutes/60 -> 5.5. Then apply sign.
+                    const offset = (Math.abs(hours) + (minutes / 60)) * (hours >= 0 ? 1 : -1);
+                    return offset;
+                }
+                
+                if (str.includes("GMT") && !str.includes("GMT+")) return 0; // GMT+00:00 sometimes shows as GMT
+
+                console.warn("Could not parse offset from", str, "Defaulting to 5.5");
+                return 5.5; // Fallback
+            } catch (e) {
+                console.error("Timezone Parse Error", e);
+                return 5.5; 
+            }
+        }
+
+        function renderDashboard(data, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga) {
+            // Safe fix: Check if element exists before setting.
+            const ayaEl = document.getElementById('val-ayanamsa');
+            if(ayaEl) ayaEl.innerText = astroEngine.decimalToDMS(data.meta.ayanamsaValue);
+
+            const asc = data.planets[0];
+            const moon = data.planets.find(p => p.name === "Moon");
+            
+            setText('val-ascDesc', asc.sign);
+            setText('val-ascDeg', asc.dms);
+            setText('val-moonSign', moon.sign);
+            setText('val-moonNak', moon.nakshatra);
+            
+            setText('pan-tithi', data.panchanga.tithi);
+            setText('pan-vara', data.panchanga.vara);
+            setText('pan-nak', data.panchanga.nakshatra);
+            setText('pan-yoga', data.panchanga.yoga);
+            setText('pan-karana', data.panchanga.karana);
+
+            renderSouthChart('chart-d1', data.planets, 'd1');
+            renderSouthChart('chart-d9', data.planets, 'd9');
+
+            const tbody = document.getElementById('planet-detail-body');
+            tbody.innerHTML = '';
+            data.planets.forEach(p => {
+                const signLord = jyotishTools.getSignLord(p.sign);
+                const pada = Math.floor((p.longitude % 13.3333333) / 3.3333333) + 1;
+                const status = (p.isRetrograde) 
+                    ? '<span class="badge badge-warning badge-xs">Ret</span>' 
+                    : '<span class="badge badge-ghost badge-xs text-gray-400">Dir</span>';
+                
+                tbody.innerHTML += `<tr class="hover:bg-gray-50 transition-colors">
+                    <td class="font-bold text-gray-700 flex items-center justify-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] planet-${p.name}">${p.name.substring(0,2)}</span>
+                        ${p.name}
+                    </td>
+                    <td>${p.sign}</td>
+                    <td class="font-mono text-xs text-gray-500">${p.dms}</td>
+                    <td>${p.nakshatra}</td>
+                    <td>${pada}</td>
+                    <td>${signLord}</td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+
+            // KP
+            const cuspsBody = document.getElementById('kp-cusp-body');
+            cuspsBody.innerHTML = '';
+            kpData.cusps.forEach(c => {
+                const k = c.kp;
+                cuspsBody.innerHTML += `<tr class="hover:bg-gray-50">
+                    <td class="font-bold text-gray-400">H${c.id}</td>
+                    <td>${k.sign}</td>
+                    <td class="font-mono text-xs">${c.dms}</td>
+                    <td>${k.signLord}</td>
+                    <td>${k.starLord}</td>
+                    <td class="font-bold text-primary">${k.subLord}</td>
+                </tr>`;
+            });
+
+            const kpPlBody = document.getElementById('kp-planet-body');
+            kpPlBody.innerHTML = '';
+            kpData.planets.forEach(p => {
+                const k = p.kp;
+                kpPlBody.innerHTML += `<tr class="hover:bg-gray-50">
+                    <td class="font-bold flex gap-1 justify-center"><span class="planet-${p.name}">${p.name.substring(0,2)}</span></td>
+                    <td class="font-mono text-xs">${p.dms}</td>
+                    <td>${k.signLord}</td>
+                    <td>${k.starLord}</td>
+                    <td class="font-bold text-primary">${k.subLord}</td>
+                </tr>`;
+            });
+
+            // SHADBALA
+            const shadBody = document.getElementById('shadbala-body');
+            shadBody.innerHTML = '';
+            Object.keys(shadbala).forEach(key => {
+                const s = shadbala[key];
+                // Relative strength rough calc: > 1.0 (some standard ratios exist but simplified here)
+                // Just showing total for now
+                shadBody.innerHTML += `<tr>
+                    <td class="font-bold text-left pl-4">${key}</td>
+                    <td class="font-bold text-primary">${s.total}</td>
+                    <td class="text-xs text-gray-400">RP</td>
+                </tr>`;
+            });
+
+            // DASHAS
+            const dashaBody = document.getElementById('dasha-body');
+            dashaBody.innerHTML = '';
+            dashas.forEach(d => {
+                // Highlight current dasha if logic added later
+                dashaBody.innerHTML += `<tr>
+                    <td class="font-bold">${d.lord}</td>
+                    <td class="font-mono text-xs">${d.start.toLocaleDateString()}</td>
+                    <td class="font-mono text-xs">${d.end.toLocaleDateString()}</td>
+                    <td class="text-gray-400">${d.duration.toFixed(1)}y</td>
+                </tr>`;
+            });
+
+            // SPECIALTY
+            document.getElementById('avkahada-body').innerHTML = `
+                <tr class="border-b border-gray-50"><td>Gana</td><td class="font-bold text-gray-700 text-right">${avkahada.gana}</td></tr>
+                <tr class="border-b border-gray-50"><td>Yoni</td><td class="font-bold text-gray-700 text-right">${avkahada.yoni}</td></tr>
+                <tr><td>Nadi</td><td class="font-bold text-gray-700 text-right">${avkahada.nadi}</td></tr>
+            `;
+
+            const jmBody = document.getElementById('jaimini-body');
+            jmBody.innerHTML = '';
+            jaimini.forEach(k => {
+                jmBody.innerHTML += `<tr>
+                    <td class="font-bold text-primary">${k.karaka}</td>
+                    <td>${k.planet}</td>
+                    <td class="font-mono text-xs">${k.degree}°</td>
+                </tr>`;
+            });
+
+            const doshaContainer = document.getElementById('dosha-container');
+            doshaContainer.innerHTML = '';
+            if(doshas.manglik.isPresent) {
+                doshaContainer.innerHTML += `<div class="badge badge-error badge-outline gap-2 p-3 font-medium">Manglik: ${doshas.manglik.reason}</div>`;
+            } else {
+                doshaContainer.innerHTML += `<div class="badge badge-success badge-outline gap-2 p-3 font-medium">No Manglik Dosha</div>`;
+            }
+            if(doshas.kalsarpa.isPresent) {
+                doshaContainer.innerHTML += `<div class="badge badge-warning badge-outline gap-2 p-3 font-medium">Kalsarpa: ${doshas.kalsarpa.type}</div>`;
+            }
+
+            renderDataExport(data, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga);
+        }
+        
+        function setText(id, val) {
+            const el = document.getElementById(id);
+            if(el) el.innerText = val;
+        }
+
+        function renderSouthChart(containerId, planets, vargaKey) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for(let i=0; i<16; i++) {
+                const div = document.createElement('div');
+                if (i===5 || i===6 || i===9 || i===10) {
+                     if(i===5) {
+                         div.className = "chart-center";
+                         div.innerHTML = `<span class="font-bold text-gray-300 text-[10px] tracking-widest">${vargaKey.toUpperCase()}</span>`;
+                         container.appendChild(div);
+                     }
+                     continue; 
+                 }
+                 div.className = "chart-cell border-[0.5px] border-gray-100 hover:shadow-inner";
+                 let signId = 0;
+                 if(i===0) signId=12; else if(i===1) signId=1; else if(i===2) signId=2; else if(i===3) signId=3;
+                 else if(i===4) signId=11; else if(i===7) signId=4;
+                 else if(i===8) signId=10; else if(i===11) signId=5;
+                 else if(i===12) signId=9; else if(i===13) signId=8; else if(i===14) signId=7; else if(i===15) signId=6;
+                 
+                 div.innerHTML = `<span class="absolute top-0.5 left-1 text-[8px] text-gray-300 font-bold">${signId}</span>`;
+                 planets.forEach(p => {
+                     const pSignId = p.vargas[vargaKey].signId + 1;
+                     if(pSignId === signId) {
+                         const pSpan = document.createElement('span');
+                         pSpan.className = `planet-glyph planet-${p.name}`;
+                         pSpan.innerText = p.name.substring(0,2);
+                         div.appendChild(pSpan);
+                     }
+                 });
+                 container.appendChild(div);
+            }
+        }
+
+        /* -----------------------------------------------------
+           DATA EXPORT & NARRATION LOGIC
+           ----------------------------------------------------- */
+        
+        let exportData = { json: "", verbal: "" };
+
+        function renderDataExport(data, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga) {
+            
+            // Construct full JSON object (clean clone or subset if circular refs exist - usually fine here)
+            const fullObj = {
+                basic: {
+                    name: document.getElementById('name').value,
+                    dob: document.getElementById('dob').value,
+                    tob: document.getElementById('tob').value,
+                    place: document.getElementById('citySearch').value,
+                },
+                meta: data.meta,
+                panchanga: data.panchanga,
+                planets: data.planets,
+                kp: kpData,
+                dashas: dashas,
+                shadbala: shadbala,
+                jaimini: jaimini,
+                doshas: doshas,
+                avkahada: avkahada,
+                ashtakvarga: ashtakvarga
+            };
+
+            exportData.json = JSON.stringify(fullObj, null, 2);
+            exportData.verbal = generateVerbalNarration(fullObj);
+
+            // Render
+            document.getElementById('json-view').innerText = exportData.json;
+            // Simple formatter for verbal text
+            document.getElementById('verbal-view').innerHTML = formatVerbalToHtml(exportData.verbal);
+
+            document.getElementById('data-export-section').classList.remove('hidden');
+        }
+
+        function generateVerbalNarration(D) {
+            let txt = "";
+            const d = D.basic;
+            const p = D.planets;
+
+            // Header
+            txt += `### Horoscope Details\n`;
+            txt += `**Name:** ${d.name || "User"}  \n`;
+            txt += `**Date of Birth:** ${d.dob}  \n`;
+            txt += `**Time of Birth:** ${d.tob}  \n`;
+            txt += `**Place:** ${d.place}  \n`;
+            txt += `**Ayanamsa:** ${astroEngine.decimalToDMS(D.meta.ayanamsaValue)} (${document.getElementById('ayaMode').selectedOptions[0].text})\n\n`;
+
+            // Panchanga
+            txt += `### Panchanga\n`;
+            txt += `- **Tithi:** ${D.panchanga.tithi}\n`;
+            txt += `- **Vara (Day):** ${D.panchanga.vara}\n`;
+            txt += `- **Nakshatra:** ${D.panchanga.nakshatra}\n`;
+            txt += `- **Yoga:** ${D.panchanga.yoga}\n`;
+            txt += `- **Karana:** ${D.panchanga.karana}\n\n`;
+
+            // Planetary Details
+            txt += `### Planetary Positions\n`;
+            p.forEach(pl => {
+                const signLord = jyotishTools.getSignLord(pl.sign);
+                const pada = Math.floor((pl.longitude % 13.3333333) / 3.3333333) + 1;
+                const status = (pl.isRetrograde) ? "Retrograde" : "Direct";
+                
+                txt += `- **${pl.name}:** Placed in **${pl.sign}** at **${pl.dms}**.\n`;
+                txt += `  - Nakshatra: ${pl.nakshatra} (Pada ${pada})\n`;
+                txt += `  - Sign Lord: ${signLord}\n`;
+                txt += `  - Status: ${status}\n`;
+            });
+            txt += "\n";
+
+            // Dasha
+            txt += `### Vimshottari Dasha Rules\n`;
+            D.dashas.forEach(dasha => {
+                txt += `- **${dasha.lord} Dasha:** From ${new Date(dasha.start).toLocaleDateString()} to ${new Date(dasha.end).toLocaleDateString()} (${dasha.duration.toFixed(2)} Years)\n`;
+            });
+            txt += "\n";
+
+            // Shadbala
+            txt += `### Shadbala Strength\n`;
+            Object.keys(D.shadbala).forEach(k => {
+                txt += `- **${k}:** ${D.shadbala[k].total} Rupas\n`;
+            });
+            txt += "\n";
+
+            // KP System
+            txt += `### KP System Analysis\n`;
+            txt += `**House Cusps (Bhavas):**\n`;
+            D.kp.cusps.forEach(c => {
+                 const k = c.kp;
+                 txt += `- **House ${c.id}:** ${c.dms} in ${k.sign}. [SignL: ${k.signLord} | StarL: ${k.starLord} | SubL: ${k.subLord}]\n`;
+            });
+            txt += `\n**Planetary Significations:**\n`;
+            D.kp.planets.forEach(pl => {
+                const k = pl.kp;
+                 txt += `- **${pl.name}:** [SignL: ${k.signLord} | StarL: ${k.starLord} | SubL: ${k.subLord}]\n`;
+            });
+            txt += "\n";
+
+            // Analysis
+            txt += `### Detailed Analysis\n`;
+            txt += `**Avkahada Chakra:**\n`;
+            txt += `- Gana: ${D.avkahada.gana}\n`;
+            txt += `- Yoni: ${D.avkahada.yoni}\n`;
+            txt += `- Nadi: ${D.avkahada.nadi}\n\n`;
+
+            txt += `**Jaimini Karakas:**\n`;
+            D.jaimini.forEach(j => {
+                txt += `- ${j.karaka}: ${j.planet} (${j.degree}°)\n`;
+            });
+            txt += "\n";
+
+            txt += `**Dosha Analysis:**\n`;
+            txt += `- **Manglik:** ${D.doshas.manglik.isPresent ? "Present (" + D.doshas.manglik.reason + ")" : "Absent"}\n`;
+            txt += `- **Kalsarpa:** ${D.doshas.kalsarpa.isPresent ? "Present (" + D.doshas.kalsarpa.type + ")" : "Absent"}\n`;
+
+            return txt;
+        }
+
+        function formatVerbalToHtml(text) {
+            // Convert markdown style to HTML
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900">$1</strong>')
+                .replace(/^### (.*?)<br>/gm, '<h3 class="text-lg font-bold text-primary mt-6 mb-2 border-b border-gray-100 pb-1">$1</h3>')
+                .replace(/^- (.*?)<br>/gm, '<div class="ml-4 mb-1">• $1</div>');
+        }
+
+        window.toggleDataView = () => {
+            const isVerbal = document.getElementById('viewToggle').checked;
+            const jsonEl = document.getElementById('json-view');
+            const verbalEl = document.getElementById('verbal-view');
+
+            if(isVerbal) {
+                jsonEl.classList.add('hidden');
+                verbalEl.classList.remove('hidden');
+            } else {
+                verbalEl.classList.add('hidden');
+                jsonEl.classList.remove('hidden');
+            }
+        }
+
+        window.copyDataToClipboard = () => {
+            const isVerbal = document.getElementById('viewToggle').checked;
+            const content = isVerbal ? exportData.verbal : exportData.json;
+            navigator.clipboard.writeText(content).then(() => {
+                const btn = document.querySelector('#data-export-section button');
+                const orig = btn.innerHTML;
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Copied!`;
+                setTimeout(() => { btn.innerHTML = orig }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
