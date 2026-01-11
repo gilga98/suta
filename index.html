@@ -877,6 +877,19 @@
                 setTimeout(() => { btn.innerHTML = orig }, 2000);
             });
         }
+
+        window.switchChartTab = (chartKey, tabElement) => {
+             // 1. Hide all chart views
+             document.querySelectorAll('.chart-view').forEach(el => el.classList.add('hidden'));
+             
+             // 2. Show selected
+             document.getElementById(`chart-container-${chartKey}`).classList.remove('hidden');
+             
+             // 3. Update Tab Styles
+             const parent = tabElement.parentElement;
+             parent.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
+             tabElement.classList.add('tab-active');
+        };
     </script>
 </body>
 </html>
