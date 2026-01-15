@@ -6,11 +6,11 @@ try:
     with gzip.open('indian_locations.json.gz', 'rb') as f:
         data = json.load(f)
     
-    # Data is list of lists: [Name, Lat, Lng, Tz]
-    # Check for short alphanumeric names starting with digit or just looking like garbage
-    garbage = [x for x in data if x[0] in ["1a", "1b", "1c", "2a"] or (len(x[0]) < 3 and x[0][0].isdigit())]
-    for item in garbage:
-        print(f"Found Garbage? : {item}")
+    # Inspect first 5 items to check for State info
+    print("--- First 5 Items ---") 
+    for i in range(5):
+        print(data[i])
+
         
     # Also just print simple ones
     print("--- Searching '1a' ---")

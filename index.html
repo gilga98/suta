@@ -392,14 +392,22 @@
                 // Initialize Engine
                 await astroEngine.init();
                 
-                // Initialize Tom Select (Empty first)
+                // Initialize TomSelect (Empty first)
                 tsControl = new TomSelect("#citySelect", {
                     valueField: 'id',
                     labelField: 'n',
-                    searchField: 'n',
+                    searchField: ['n', 'st'], // Search both name and state
                     maxOptions: 50,
                     create: false,
                     placeholder: "Search City (e.g. Mumbai, New York)",
+                    render: {
+                        option: function(data, escape) {
+                            return '<div class="flex justify-between items-center py-1"><span>' + escape(data.n) + '</span> <span class="text-xs text-gray-400 uppercase tracking-widest ml-2">' + escape(data.st) + '</span></div>';
+                        },
+                        item: function(data, escape) {
+                            return '<div>' + escape(data.n) + ', ' + escape(data.st) + '</div>';
+                        }
+                    },
                     onChange: (value) => {
                         if(value && tsControl.options[value]) {
                             const data = tsControl.options[value];
@@ -413,10 +421,9 @@
                 tsControl.disable(); // Disable until data loads
 
                 // Load City Data
-                // Fetch GZIPPED file to save bandwidth (28MB -> 6MB)
-                // Format is now ARRAY of ARRAYS: [Name, Lat, Lng, Tz]
-                // We map this to objects for Tom Select: { id: i, n: Name, lat: Lat, lng: Lng, tz: Tz }
-                const res = await fetch('./indian_locations.json.gz');
+                // Fetch GZIPPED file to save bandwidth
+                // Format: [Name, Lat, Lng, Tz, State]
+                const res = await fetch('./indian_locations_state.json.gz');
                 const buffer = await res.arrayBuffer();
                 
                 // Decompress
@@ -432,7 +439,8 @@
                         n: d[0],
                         lat: d[1],
                         lng: d[2],
-                        tz: d[3]
+                        tz: d[3],
+                        st: d[4] // State index
                     }));
                 
                 tsControl.addOptions(options);
