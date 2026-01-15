@@ -424,13 +424,16 @@
                 const rawData = JSON.parse(text);
                 
                 // Optimize mapping 
-                const options = rawData.map((d, i) => ({
-                    id: i,
-                    n: d[0],
-                    lat: d[1],
-                    lng: d[2],
-                    tz: d[3]
-                }));
+                // Filter garbage (starts with digit or too short)
+                const options = rawData
+                    .filter(d => !/^\d/.test(d[0]) && d[0].length > 2)
+                    .map((d, i) => ({
+                        id: i,
+                        n: d[0],
+                        lat: d[1],
+                        lng: d[2],
+                        tz: d[3]
+                    }));
                 
                 tsControl.addOptions(options);
                 tsControl.enable();
@@ -746,7 +749,7 @@
                     name: document.getElementById('name').value,
                     dob: document.getElementById('dob').value,
                     tob: document.getElementById('tob').value,
-                    place: document.getElementById('citySearch').value,
+                    place: (tsControl && tsControl.getValue() !== "") ? tsControl.options[tsControl.getValue()].n : "Unknown",
                 },
                 meta: data.meta,
                 panchanga: data.panchanga,
