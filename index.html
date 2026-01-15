@@ -12,6 +12,11 @@
     <!-- Tailwind + DaisyUI -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tom Select -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <!-- Pako (GZIP Decompression) -->
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -120,13 +125,11 @@
 
                         <!-- Right Col: Location & Settings -->
                         <div class="space-y-4">
-                             <div class="form-control w-full input-group relative">
+                             <div class="form-control w-full">
                                 <label class="label pb-1"><span class="label-text text-xs font-bold uppercase text-gray-400 tracking-wider">Place of Birth</span></label>
-                                <input type="text" id="citySearch" list="cityList" class="input input-bordered w-full rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-10" placeholder="Search City..." disabled />
-                                <div class="absolute right-3 top-9 text-gray-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                                </div>
-                                <datalist id="cityList"></datalist>
+                                <select id="citySelect" class="w-full" placeholder="Search City..." autocomplete="off">
+                                    <option value="">Search City...</option>
+                                </select>
                                 <!-- HIDDEN FIELDS AUTO-POPULATED -->
                                 <input type="hidden" id="selectedLat">
                                 <input type="hidden" id="selectedLng">
@@ -380,60 +383,67 @@
         import astroEngine from './VedicAstroEngine.js';
         import jyotishTools from './JyotishTools.js';
 
-        let cityData = [];
+        let tsControl;
 
         window.onload = async () => {
             try {
+                const loader = document.getElementById('loader');
+
                 // Initialize Engine
                 await astroEngine.init();
                 
-                const loader = document.getElementById('loader');
-                loader.classList.add('hidden');
-                
-                document.getElementById('calcBtn').disabled = false;
+                // Initialize Tom Select (Empty first)
+                tsControl = new TomSelect("#citySelect", {
+                    valueField: 'id',
+                    labelField: 'n',
+                    searchField: 'n',
+                    maxOptions: 50,
+                    create: false,
+                    placeholder: "Search City (e.g. Mumbai, New York)",
+                    onChange: (value) => {
+                        if(value && tsControl.options[value]) {
+                            const data = tsControl.options[value];
+                            document.getElementById('selectedLat').value = data.lat;
+                            document.getElementById('selectedLng').value = data.lng;
+                            document.getElementById('timezone').value = data.tz;
+                            console.log("Selected:", data);
+                        }
+                    }
+                });
+                tsControl.disable(); // Disable until data loads
 
                 // Load City Data
-                const res = await fetch('./cityData.json');
-                cityData = await res.json();
+                // Fetch GZIPPED file to save bandwidth (28MB -> 6MB)
+                // Format is now ARRAY of ARRAYS: [Name, Lat, Lng, Tz]
+                // We map this to objects for Tom Select: { id: i, n: Name, lat: Lat, lng: Lng, tz: Tz }
+                const res = await fetch('./indian_locations.json.gz');
+                const buffer = await res.arrayBuffer();
                 
-                const cityInput = document.getElementById('citySearch');
-                cityInput.disabled = false;
-                cityInput.placeholder = "Search City (e.g. Mumbai, New York)";
+                // Decompress
+                const text = pako.ungzip(buffer, { to: 'string' });
+                const rawData = JSON.parse(text);
                 
-                const datalist = document.getElementById('cityList');
-                // Optimization: Don't load all 40k cities into DOM. Simple search already works via input event logic below?
-                // Actually the original code loaded slice 0-5000. 
-                // Let's load a reasonable amount or rely on JS filtering to avoid DOM freeze.
-                // For 'datalist', keeping it small is better.
-                // We'll update datalist dynamically maybe?
-                // For now, let's just stick to original logic but maybe bump slice if needed, or keeping 5000 is fine.
-                cityData.slice(0, 15000).forEach(city => {
-                    const opt = document.createElement('option');
-                    opt.value = `${city.city}, ${city.country}`;
-                    datalist.appendChild(opt);
-                });
+                // Optimize mapping 
+                const options = rawData.map((d, i) => ({
+                    id: i,
+                    n: d[0],
+                    lat: d[1],
+                    lng: d[2],
+                    tz: d[3]
+                }));
+                
+                tsControl.addOptions(options);
+                tsControl.enable();
+                
+                loader.classList.add('hidden');
+                document.getElementById('calcBtn').disabled = false;
 
             } catch (e) {
                 console.error(e);
                 alert("Init Failed: " + e.message);
+                document.getElementById('loader').classList.add('hidden'); // Ensure loader hides on error
             }
         };
-        
-        // Datalist Dynamic Update (Optional Optimization for large lists)
-        document.getElementById('citySearch').addEventListener('input', (e) => {
-             const val = e.target.value;
-             // Auto-populate hidden fields if exact match
-             const found = cityData.find(c => `${c.city}, ${c.country}` === val);
-             if (found) {
-                 document.getElementById('selectedLat').value = found.lat;
-                 document.getElementById('selectedLng').value = found.lng;
-                 
-                 // AUTO TIMEZONE LOGIC
-                 // We have found.timezone (IANA string e.g. "Asia/Kolkata")
-                 document.getElementById('timezone').value = found.timezone || "Asia/Kolkata";
-                 console.log("Selected City:", found.city, "Timezone:", found.timezone);
-             }
-        });
 
         window.generateChart = () => {
              const dateStr = document.getElementById('dob').value;
