@@ -33,13 +33,31 @@
         }
     </script>
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f7f7f7; }
+        body { font-family: 'Outfit', sans-serif; }
+        [data-theme="light"] body { background-color: #f7f7f7; }
+        [data-theme="dark"] body { background-color: #1a1a2e; }
+        
+        /* Dark mode overrides for custom elements */
+        [data-theme="dark"] .chart-grid { background: #374151; border-color: #4b5563; }
+        [data-theme="dark"] .chart-cell { background: #1f2937; }
+        [data-theme="dark"] .chart-center { background: #111827; }
+        [data-theme="dark"] .rashi-label { color: #9ca3af; }
+        [data-theme="dark"] .planet-glyph { background: rgba(0,0,0,0.5); }
+        
+        /* Rashi colors in dark mode - slightly muted */
+        [data-theme="dark"] .rashi-sun { background: linear-gradient(135deg, #78350f 0%, #451a03 100%); }
+        [data-theme="dark"] .rashi-moon { background: linear-gradient(135deg, #374151 0%, #1f2937 100%); }
+        [data-theme="dark"] .rashi-mars { background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%); }
+        [data-theme="dark"] .rashi-mercury { background: linear-gradient(135deg, #064e3b 0%, #022c22 100%); }
+        [data-theme="dark"] .rashi-jupiter { background: linear-gradient(135deg, #713f12 0%, #422006 100%); }
+        [data-theme="dark"] .rashi-venus { background: linear-gradient(135deg, #581c87 0%, #3b0764 100%); }
+        [data-theme="dark"] .rashi-saturn { background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); }
         .chart-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 70px); gap: 1px; background: #cbd5e1; border: 1px solid #e2e8f0; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; }
-        .chart-cell { background: white; position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; font-size: 0.70rem; padding: 2px; transition: background 0.2s; }
-        .chart-cell:hover { background: #f8fafc; }
+        .chart-cell { background: white; position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; font-size: 0.70rem; padding: 2px; transition: all 0.2s; }
+        .chart-cell:hover { filter: brightness(0.95); }
         .chart-center { grid-column: 2 / span 2; grid-row: 2 / span 2; background: #fdfdfd; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .planet-glyph { font-weight: 600; margin: 1px; padding: 2px 4px; border-radius: 4px; font-size: 0.7rem; }
-        .planet-Ascendant { color: #ff385c; background: #fff1f2; }
+        .planet-glyph { font-weight: 600; margin: 1px; padding: 2px 4px; border-radius: 4px; font-size: 0.7rem; background: rgba(255,255,255,0.85); }
+        .planet-Ascendant { color: #ff385c; background: rgba(255,241,242,0.95); }
         .planet-Sun { color: #d97706; }
         .planet-Moon { color: #0f172a; }
         .planet-Mars { color: #b91c1c; }
@@ -49,6 +67,18 @@
         .planet-Saturn { color: #1e293b; }
         .planet-Rahu { color: #4b5563; }
         .planet-Ketu { color: #4b5563; }
+        
+        /* Rashi Lord Color Backgrounds */
+        .rashi-sun { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); } /* Orange tint for Leo */
+        .rashi-moon { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); } /* Silver for Cancer */
+        .rashi-mars { background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); } /* Red tint for Aries, Scorpio */
+        .rashi-mercury { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); } /* Green for Gemini, Virgo */
+        .rashi-jupiter { background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%); } /* Yellow for Sagittarius, Pisces */
+        .rashi-venus { background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); } /* Pink for Taurus, Libra */
+        .rashi-saturn { background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%); } /* Blue tint for Capricorn, Aquarius */
+        
+        .rashi-label { position: absolute; bottom: 1px; right: 3px; font-size: 7px; font-weight: 600; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.02em; }
+        .house-label { position: absolute; top: 1px; left: 3px; font-size: 8px; font-weight: 700; color: #ff385c; }
         
         #loader { position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 50; display: flex; justify-content: center; align-items: center; }
         #loader.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
@@ -62,6 +92,10 @@
 
         /* Input Transitions */
         .input-group:focus-within label { color: #ff385c; }
+        
+        /* Legend Styling */
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+        .legend-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="text-secondary antialiased min-h-screen flex flex-col">
@@ -84,9 +118,31 @@
                 <span class="text-2xl">🕉️</span>
                 <span class="font-bold text-lg tracking-tight">SŪTA</span>
             </div>
-            <div class="flex items-center gap-4">
-               <button class="btn btn-ghost btn-circle btn-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <div class="flex items-center gap-2">
+               <!-- Profiles Dropdown -->
+               <div class="dropdown dropdown-end">
+                  <label tabindex="0" class="btn btn-ghost btn-sm gap-1">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                     <span class="text-xs font-medium hidden sm:inline">Profiles</span>
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                  </label>
+                  <div tabindex="0" class="dropdown-content z-50 menu p-3 shadow-xl bg-white rounded-xl w-72 border border-gray-100">
+                     <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-2">Saved Profiles</div>
+                     <ul id="profilesList" class="max-h-48 overflow-y-auto custom-scroll">
+                        <li class="text-gray-400 text-xs px-2 py-2">No saved profiles</li>
+                     </ul>
+                     <div class="divider my-2"></div>
+                     <button onclick="saveCurrentProfile()" class="btn btn-primary btn-sm w-full gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                        Save Current
+                     </button>
+                  </div>
+               </div>
+               <button id="themeToggle" onclick="toggleTheme()" class="btn btn-ghost btn-circle btn-sm">
+                  <!-- Sun icon for light mode -->
+                  <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                  <!-- Moon icon for dark mode -->
+                  <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                </button>
             </div>
         </div>
@@ -190,9 +246,23 @@
                          <div id="chart-container-d9" class="chart-view hidden">
                              <div class="chart-grid" id="chart-d9"></div>
                          </div>
+                         
+                         <!-- Rashi Legend -->
+                         <div class="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                             <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Rashi Lords</div>
+                             <div class="grid grid-cols-4 gap-2">
+                                 <div class="legend-item"><div class="legend-swatch rashi-sun"></div><span class="text-gray-600">☉ Sun</span></div>
+                                 <div class="legend-item"><div class="legend-swatch rashi-moon"></div><span class="text-gray-600">☽ Moon</span></div>
+                                 <div class="legend-item"><div class="legend-swatch rashi-mars"></div><span class="text-gray-600">♂ Mars</span></div>
+                                 <div class="legend-item"><div class="legend-swatch rashi-mercury"></div><span class="text-gray-600">☿ Mercury</span></div>
+                                 <div class="legend-item"><div class="legend-swatch rashi-jupiter"></div><span class="text-gray-600">♃ Jupiter</span></div>
+                                 <div class="legend-item"><div class="legend-swatch rashi-venus"></div><span class="text-gray-600">♀ Venus</span></div>
+                                 <div class="legend-item"><div class="legend-swatch rashi-saturn"></div><span class="text-gray-600">♄ Saturn</span></div>
+                             </div>
+                         </div>
 
                          <!-- Basic Vitals Below Chart -->
-                         <div class="mt-6 flex justify-between items-center px-2">
+                         <div class="mt-4 flex justify-between items-center px-2">
                              <div class="text-center">
                                  <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Lagna</div>
                                  <div class="text-xl font-medium text-primary" id="val-ascDesc">-</div>
@@ -592,8 +662,13 @@
             setText('pan-yoga', data.panchanga.yoga);
             setText('pan-karana', data.panchanga.karana);
 
-            renderSouthChart('chart-d1', data.planets, 'd1');
-            renderSouthChart('chart-d9', data.planets, 'd9');
+            // Get ascendant sign ID for house calculations
+            const ascSignId = asc.signId; // 0-indexed (0=Aries)
+            
+            renderSouthChart('chart-d1', data.planets, 'd1', ascSignId);
+            // For D9, lagna is based on navamsa ascendant
+            const d9AscSignId = asc.vargas.d9.signId;
+            renderSouthChart('chart-d9', data.planets, 'd9', d9AscSignId);
 
             const tbody = document.getElementById('planet-detail-body');
             tbody.innerHTML = '';
@@ -709,7 +784,37 @@
             if(el) el.innerText = val;
         }
 
-        function renderSouthChart(containerId, planets, vargaKey) {
+        // Rashi data: [English Name, Sanskrit Abbrev, Lord]
+        const RASHI_DATA = [
+            ["Aries", "Meṣ", "Mars"],
+            ["Taurus", "Vṛṣ", "Venus"],
+            ["Gemini", "Mith", "Mercury"],
+            ["Cancer", "Kark", "Moon"],
+            ["Leo", "Siṃh", "Sun"],
+            ["Virgo", "Kanyā", "Mercury"],
+            ["Libra", "Tulā", "Venus"],
+            ["Scorpio", "Vṛś", "Mars"],
+            ["Sagittarius", "Dhan", "Jupiter"],
+            ["Capricorn", "Mak", "Saturn"],
+            ["Aquarius", "Kumb", "Saturn"],
+            ["Pisces", "Mīn", "Jupiter"]
+        ];
+        
+        // Map lord name to CSS class
+        function getLordClass(lordName) {
+            const lordClasses = {
+                "Sun": "rashi-sun",
+                "Moon": "rashi-moon",
+                "Mars": "rashi-mars",
+                "Mercury": "rashi-mercury",
+                "Jupiter": "rashi-jupiter",
+                "Venus": "rashi-venus",
+                "Saturn": "rashi-saturn"
+            };
+            return lordClasses[lordName] || "";
+        }
+
+        function renderSouthChart(containerId, planets, vargaKey, lagnaSignId = 0) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             for(let i=0; i<16; i++) {
@@ -722,14 +827,34 @@
                      }
                      continue; 
                  }
-                 div.className = "chart-cell border-[0.5px] border-gray-100 hover:shadow-inner";
+                 
+                 // Get sign ID (1-12 based)
                  let signId = 0;
                  if(i===0) signId=12; else if(i===1) signId=1; else if(i===2) signId=2; else if(i===3) signId=3;
                  else if(i===4) signId=11; else if(i===7) signId=4;
                  else if(i===8) signId=10; else if(i===11) signId=5;
                  else if(i===12) signId=9; else if(i===13) signId=8; else if(i===14) signId=7; else if(i===15) signId=6;
                  
-                 div.innerHTML = `<span class="absolute top-0.5 left-1 text-[8px] text-gray-300 font-bold">${signId}</span>`;
+                 // Get rashi data (0-indexed)
+                 const rashiInfo = RASHI_DATA[signId - 1];
+                 const rashiName = rashiInfo[0];
+                 const rashiAbbrev = rashiInfo[1];
+                 const rashiLord = rashiInfo[2];
+                 const lordClass = getLordClass(rashiLord);
+                 
+                 // Calculate house number (bhava) from lagna
+                 // lagnaSignId is 0-indexed, signId is 1-indexed
+                 // House 1 = lagna sign, House 2 = lagna+1, etc.
+                 const houseNum = ((signId - 1 - lagnaSignId + 12) % 12) + 1;
+                 
+                 div.className = `chart-cell border-[0.5px] border-gray-100 hover:shadow-inner ${lordClass}`;
+                 
+                 // Add house number (top-left) and rashi with sign number (bottom-right)
+                 div.innerHTML = `
+                     <span class="house-label">${houseNum}</span>
+                     <span class="rashi-label text-gray-500">${rashiAbbrev} (${signId})</span>
+                 `;
+                 
                  planets.forEach(p => {
                      const pSignId = p.vargas[vargaKey].signId + 1;
                      if(pSignId === signId) {
@@ -911,6 +1036,195 @@
              parent.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
              tabElement.classList.add('tab-active');
         };
+
+        /* -----------------------------------------------------
+           PROFILE MANAGEMENT (localStorage)
+           ----------------------------------------------------- */
+        
+        const PROFILES_KEY = 'suta_profiles';
+        
+        function getProfiles() {
+            const data = localStorage.getItem(PROFILES_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+        
+        function saveProfiles(profiles) {
+            localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+        }
+        
+        function renderProfilesList() {
+            const profiles = getProfiles();
+            const list = document.getElementById('profilesList');
+            
+            if (profiles.length === 0) {
+                list.innerHTML = '<li class="text-gray-400 text-xs px-2 py-2">No saved profiles</li>';
+                return;
+            }
+            
+            list.innerHTML = profiles.map((p, idx) => `
+                <li class="flex items-center justify-between gap-2 px-2 py-2 hover:bg-gray-50 rounded-lg group">
+                    <button onclick="loadProfile(${idx})" class="flex-1 text-left text-sm font-medium text-gray-700 hover:text-primary truncate">
+                        ${p.name || 'Unnamed'}
+                    </button>
+                    <span class="text-[10px] text-gray-400 hidden group-hover:inline">${p.dob}</span>
+                    <button onclick="deleteProfile(${idx})" class="btn btn-ghost btn-xs text-gray-400 hover:text-error">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </li>
+            `).join('');
+        }
+        
+        window.saveCurrentProfile = () => {
+            const name = document.getElementById('name').value.trim();
+            const dob = document.getElementById('dob').value;
+            const tob = document.getElementById('tob').value;
+            const cityValue = tsControl ? tsControl.getValue() : '';
+            
+            if (!name) {
+                alert('Please enter a name to save the profile.');
+                return;
+            }
+            if (!dob || !tob) {
+                alert('Please fill in date and time of birth.');
+                return;
+            }
+            
+            // Get city data
+            let cityData = null;
+            if (cityValue && tsControl.options[cityValue]) {
+                const c = tsControl.options[cityValue];
+                cityData = { id: cityValue, n: c.n, lat: c.lat, lng: c.lng, tz: c.tz, st: c.st };
+            }
+            
+            const profile = {
+                name: name,
+                dob: dob,
+                tob: tob,
+                city: cityData,
+                ayaMode: document.getElementById('ayaMode').value,
+                calcMode: document.getElementById('calcMode').value,
+                savedAt: new Date().toISOString()
+            };
+            
+            const profiles = getProfiles();
+            
+            // Check if profile with same name exists
+            const existingIdx = profiles.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+            if (existingIdx >= 0) {
+                if (confirm(`Profile "${name}" already exists. Do you want to update it?`)) {
+                    profiles[existingIdx] = profile;
+                } else {
+                    return;
+                }
+            } else {
+                profiles.push(profile);
+            }
+            
+            saveProfiles(profiles);
+            renderProfilesList();
+            
+            // Flash feedback
+            const btn = document.querySelector('[onclick="saveCurrentProfile()"]');
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Saved!';
+            btn.classList.add('btn-success');
+            btn.classList.remove('btn-primary');
+            setTimeout(() => {
+                btn.innerHTML = origText;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-primary');
+            }, 1500);
+        };
+        
+        window.loadProfile = (idx) => {
+            const profiles = getProfiles();
+            const p = profiles[idx];
+            if (!p) return;
+            
+            // Set form values
+            document.getElementById('name').value = p.name || '';
+            document.getElementById('dob').value = p.dob || '';
+            document.getElementById('tob').value = p.tob || '';
+            document.getElementById('ayaMode').value = p.ayaMode || '27';
+            document.getElementById('calcMode').value = p.calcMode || '16';
+            
+            // Set city if available
+            if (p.city && tsControl) {
+                // Add the option if not present
+                if (!tsControl.options[p.city.id]) {
+                    tsControl.addOption(p.city);
+                }
+                tsControl.setValue(p.city.id, true);
+                
+                // Set hidden fields
+                document.getElementById('selectedLat').value = p.city.lat;
+                document.getElementById('selectedLng').value = p.city.lng;
+                document.getElementById('timezone').value = p.city.tz;
+            }
+            
+            // Close dropdown
+            document.activeElement.blur();
+            
+            // Visual feedback - scroll to input section
+            document.getElementById('input-section').scrollIntoView({ behavior: 'smooth' });
+        };
+        
+        window.deleteProfile = (idx) => {
+            const profiles = getProfiles();
+            const p = profiles[idx];
+            if (!p) return;
+            
+            if (confirm(`Delete profile "${p.name}"?`)) {
+                profiles.splice(idx, 1);
+                saveProfiles(profiles);
+                renderProfilesList();
+            }
+        };
+        
+        // Initialize profiles list on page load
+        setTimeout(renderProfilesList, 100);
+
+        /* -----------------------------------------------------
+           DARK/LIGHT THEME TOGGLE
+           ----------------------------------------------------- */
+        
+        const THEME_KEY = 'suta_theme';
+        
+        function getStoredTheme() {
+            return localStorage.getItem(THEME_KEY) || 'light';
+        }
+        
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem(THEME_KEY, theme);
+            updateThemeIcons(theme);
+        }
+        
+        function updateThemeIcons(theme) {
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            if (sunIcon && moonIcon) {
+                if (theme === 'dark') {
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                } else {
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                }
+            }
+        }
+        
+        window.toggleTheme = () => {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = current === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        };
+        
+        // Initialize theme on page load
+        (function initTheme() {
+            const storedTheme = getStoredTheme();
+            setTheme(storedTheme);
+        })();
     </script>
 </body>
 </html>
