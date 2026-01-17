@@ -109,21 +109,33 @@
         [data-theme="dark"] .rashi-jupiter { background: linear-gradient(135deg, #713f12 0%, #422006 100%); }
         [data-theme="dark"] .rashi-venus { background: linear-gradient(135deg, #581c87 0%, #3b0764 100%); }
         [data-theme="dark"] .rashi-saturn { background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); }
-        .chart-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 70px); gap: 1px; background: #cbd5e1; border: 1px solid #e2e8f0; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; }
+        .chart-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 70px); gap: 0; border: 1px solid #e2e8f0; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; }
         .chart-cell { background: white; position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; font-size: 0.70rem; padding: 2px; transition: all 0.2s; }
         .chart-cell:hover { filter: brightness(0.95); }
         .chart-center { grid-column: 2 / span 2; grid-row: 2 / span 2; background: #fdfdfd; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .planet-glyph { font-weight: 600; margin: 1px; padding: 2px 4px; border-radius: 4px; font-size: 0.7rem; background: rgba(255,255,255,0.85); }
         .planet-Ascendant { color: #ff385c; background: rgba(255,241,242,0.95); }
-        .planet-Sun { color: #d97706; }
-        .planet-Moon { color: #0f172a; }
-        .planet-Mars { color: #b91c1c; }
-        .planet-Mercury { color: #059669; }
-        .planet-Jupiter { color: #d97706; }
-        .planet-Venus { color: #7c3aed; }
-        .planet-Saturn { color: #1e293b; }
-        .planet-Rahu { color: #4b5563; }
-        .planet-Ketu { color: #4b5563; }
+        .planet-Sun { color: #f59e0b; } /* Bright Amber */
+        .planet-Moon { color: #0ea5e9; } /* Sky Blue */
+        .planet-Mars { color: #dc2626; } /* Red */
+        .planet-Mercury { color: #22c55e; } /* Green */
+        .planet-Jupiter { color: #ca8a04; } /* Dark Yellow - distinct from Sun */
+        .planet-Venus { color: #ec4899; } /* Pink */
+        .planet-Saturn { color: #6366f1; } /* Indigo */
+        .planet-Rahu { color: #8b5cf6; } /* Purple */
+        .planet-Ketu { color: #a855f7; } /* Light Purple */
+        
+        /* Dark mode planet colors - brighter for visibility */
+        [data-theme="dark"] .planet-Sun { color: #fbbf24; }
+        [data-theme="dark"] .planet-Moon { color: #38bdf8; }
+        [data-theme="dark"] .planet-Mars { color: #f87171; }
+        [data-theme="dark"] .planet-Mercury { color: #4ade80; }
+        [data-theme="dark"] .planet-Jupiter { color: #facc15; }
+        [data-theme="dark"] .planet-Venus { color: #f472b6; }
+        [data-theme="dark"] .planet-Saturn { color: #818cf8; }
+        [data-theme="dark"] .planet-Rahu { color: #a78bfa; }
+        [data-theme="dark"] .planet-Ketu { color: #c084fc; }
+        [data-theme="dark"] .planet-Ascendant { background: rgba(255,56,92,0.2); }
         
         /* Rashi Lord Color Backgrounds */
         .rashi-sun { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); } /* Orange tint for Leo */
@@ -153,6 +165,84 @@
         /* Legend Styling */
         .legend-item { display: flex; align-items: center; gap: 6px; font-size: 10px; }
         .legend-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1); }
+        
+        /* Mobile tab content: hidden by default on mobile, always visible on desktop */
+        @media (max-width: 1023px) {
+            .mobile-tab-content { display: none !important; }
+            .mobile-tab-content.active { display: block !important; }
+        }
+        @media (min-width: 1024px) {
+            .mobile-tab-content { display: block !important; }
+        }
+        
+        /* Dasha expansion arrow transition */
+        .dasha-arrow { transition: transform 0.2s ease; }
+        
+        /* ====== EVENT CALENDAR STYLES ====== */
+        
+        /* Event Type Pills */
+        .event-pill { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            padding: 8px 14px; 
+            border-radius: 24px; 
+            border: 2px solid #e5e7eb; 
+            background: white; 
+            font-size: 13px; 
+            font-weight: 500;
+            cursor: pointer; 
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .event-pill:hover { border-color: #ff385c; transform: translateY(-1px); }
+        .event-pill.active { 
+            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%); 
+            border-color: #ff385c; 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(255, 56, 92, 0.3);
+        }
+        .event-pill .pill-icon { font-size: 16px; }
+        
+        [data-theme="dark"] .event-pill { background: #1a1a2e; border-color: #3d3d55; color: #e5e7eb; }
+        [data-theme="dark"] .event-pill:hover { border-color: #ff6b8a; }
+        [data-theme="dark"] .event-pill.active { background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%); color: white; }
+        
+        /* Calendar Grid */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-header { text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #9ca3af; padding: 8px 4px; letter-spacing: 0.05em; }
+        .calendar-cell { 
+            aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;
+            position: relative; min-height: 50px; border: 1px solid transparent;
+        }
+        .calendar-cell:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10; }
+        .calendar-cell .day-num { font-weight: 600; font-size: 14px; }
+        .calendar-cell .score-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-top: 2px; background: rgba(0,0,0,0.1); }
+        .calendar-cell.empty { background: transparent; cursor: default; }
+        .calendar-cell.empty:hover { transform: none; box-shadow: none; }
+        
+        /* Probability Colors */
+        .prob-high { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #991b1b; border-color: #fca5a5; }
+        .prob-medium { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #92400e; border-color: #fcd34d; }
+        .prob-low { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); color: #065f46; border-color: #6ee7b7; }
+        .prob-very-low { background: #f3f4f6; color: #6b7280; }
+        
+        [data-theme="dark"] .prob-high { background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%); color: #fecaca; border-color: #b91c1c; }
+        [data-theme="dark"] .prob-medium { background: linear-gradient(135deg, #78350f 0%, #92400e 100%); color: #fde68a; border-color: #b45309; }
+        [data-theme="dark"] .prob-low { background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); color: #a7f3d0; border-color: #059669; }
+        [data-theme="dark"] .prob-very-low { background: #1f1f35; color: #9ca3af; }
+        
+        /* Month Navigation */
+        .month-nav { display: flex; align-items: center; justify-content: space-between; }
+        .month-nav .month-title { font-size: 1.25rem; font-weight: 700; }
+        
+        /* Day Modal */
+        .day-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+        .day-modal-backdrop.active { opacity: 1; pointer-events: auto; }
+        .day-modal { background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); transform: scale(0.9); transition: transform 0.2s ease; }
+        .day-modal-backdrop.active .day-modal { transform: scale(1); }
+        [data-theme="dark"] .day-modal { background: #1a1a2e; }
     </style>
 </head>
 <body class="text-secondary antialiased min-h-screen flex flex-col">
@@ -257,8 +347,8 @@
                                     <div>
                                         <label class="label py-1"><span class="label-text text-xs">Ayanamsa</span></label>
                                         <select id="ayaMode" class="select select-bordered select-xs w-full rounded-lg">
-                                            <option value="27" selected>True Chitrapaksha</option>
-                                            <option value="1">Lahiri (Traditional)</option>
+                                            <option value="27">True Chitrapaksha</option>
+                                            <option value="1" selected>Lahiri (Traditional)</option>
                                             <option value="5">KP (Krishnamurti)</option>
                                         </select>
                                     </div>
@@ -286,12 +376,22 @@
         <!-- OUTPUT SECTION (DASHBOARD) -->
         <section id="output" class="hidden w-full transition-opacity duration-700 opacity-0">
             
+             <!-- MOBILE TAB BAR -->
+             <div class="lg:hidden mb-4">
+                 <div role="tablist" class="tabs tabs-boxed bg-gray-100 p-1 rounded-xl">
+                     <a role="tab" class="tab tab-active rounded-lg transition-all mobile-tab" data-tab="chart" onclick="switchMobileTab('chart', this)">Chart</a>
+                     <a role="tab" class="tab rounded-lg transition-all mobile-tab" data-tab="panchang" onclick="switchMobileTab('panchang', this)">Panchang</a>
+                     <a role="tab" class="tab rounded-lg transition-all mobile-tab" data-tab="details" onclick="switchMobileTab('details', this)">Details</a>
+                 </div>
+             </div>
+
              <!-- DASHBOARD GRID -->
              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                  
                  <!-- LEFT COLUMN: CHARTS (Sticky on Desktop) -->
                  <div class="lg:col-span-4 flex flex-col gap-6">
-                     <div class="card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-4 sticky top-24">
+                     <!-- CHART CARD (mobile-tab-content) -->
+                     <div id="mobile-content-chart" class="mobile-tab-content active card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-4 lg:sticky lg:top-24">
                          <div role="tablist" class="tabs tabs-boxed bg-gray-100 p-1 rounded-xl mb-4">
                              <a role="tab" class="tab tab-active rounded-lg transition-all" onclick="switchChartTab('d1', this)">Rashi (D1)</a>
                              <a role="tab" class="tab rounded-lg transition-all" onclick="switchChartTab('d9', this)">Navamsa</a>
@@ -333,8 +433,10 @@
                              </div>
                          </div>
                      </div>
+                     </div>
                      
-                     <!-- PANCHANGA CARD -->
+                     <!-- PANCHANGA CARD (mobile-tab-content) -->
+                     <div id="mobile-content-panchang" class="mobile-tab-content">
                      <div class="card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-4">
                          <h3 class="font-bold text-gray-800 mb-3 px-2">Panchanga</h3>
                          <div class="overflow-x-auto">
@@ -364,10 +466,12 @@
                              </table>
                          </div>
                      </div>
+                     </div>
                  </div>
 
-                     <!-- RIGHT COLUMN: DETAILED DATA -->
-                 <div class="lg:col-span-8 flex flex-col gap-8">
+                     <!-- RIGHT COLUMN: DETAILED DATA (mobile-tab-content) -->
+                 <div id="mobile-content-details" class="mobile-tab-content lg:col-span-8 flex flex-col gap-8">
+
                      
                      <!-- PLANETARY POSITIONS -->
                      <div class="card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-6">
@@ -504,14 +608,124 @@
                  </div>
              </div>
          </section>
+
+         <!-- EVENT CALENDAR SECTION -->
+         <section id="event-calendar-section" class="w-full transition-all duration-500 ease-in-out hidden">
+             <div class="card bg-base-100 shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+                 <div class="card-body p-6 sm:p-8">
+                     
+                     <!-- Header -->
+                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                         <div>
+                             <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-pink-600">
+                                 Event Probability Calendar
+                             </h2>
+                             <p class="text-gray-500 text-sm mt-1">KP System Analysis with Deep Dasha (Pratyantar → Sookshma)</p>
+                         </div>
+                         <div class="flex items-center gap-2">
+                             <span class="text-xs text-gray-400 font-medium">Date Range:</span>
+                             <input type="date" id="calendarStartDate" class="input input-bordered input-sm rounded-lg w-36"/>
+                             <span class="text-gray-400">→</span>
+                             <input type="date" id="calendarEndDate" class="input input-bordered input-sm rounded-lg w-36"/>
+                             <button onclick="generateEventCalendar()" class="btn btn-primary btn-sm rounded-lg gap-1">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                 Generate
+                             </button>
+                         </div>
+                     </div>
+                     
+                     <!-- Event Type Pills (Search/Filter) -->
+                     <div class="mb-6">
+                         <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Select Event Types</div>
+                         <div class="flex flex-wrap gap-2" id="event-pills-container">
+                             <!-- Pills will be dynamically generated -->
+                         </div>
+                     </div>
+                     
+                     <!-- Probability Legend -->
+                     <div class="flex items-center gap-4 mb-4 px-2">
+                         <span class="text-xs font-bold text-gray-400">Probability:</span>
+                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-high"></div><span class="text-xs text-gray-500">High (70-100%)</span></div>
+                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-medium"></div><span class="text-xs text-gray-500">Medium (40-69%)</span></div>
+                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-low"></div><span class="text-xs text-gray-500">Low (1-39%)</span></div>
+                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-very-low border"></div><span class="text-xs text-gray-500">None</span></div>
+                     </div>
+                     
+                     <!-- Month Navigation -->
+                     <div class="month-nav mb-4 px-2">
+                         <button onclick="changeCalendarMonth(-1)" class="btn btn-ghost btn-sm btn-circle">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                         </button>
+                         <div class="month-title text-gray-800" id="calendar-month-title">January 2026</div>
+                         <button onclick="changeCalendarMonth(1)" class="btn btn-ghost btn-sm btn-circle">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                         </button>
+                     </div>
+                     
+                     <!-- Calendar Grid -->
+                     <div class="calendar-grid" id="calendar-grid">
+                         <!-- Days of week headers -->
+                         <div class="calendar-header">Sun</div>
+                         <div class="calendar-header">Mon</div>
+                         <div class="calendar-header">Tue</div>
+                         <div class="calendar-header">Wed</div>
+                         <div class="calendar-header">Thu</div>
+                         <div class="calendar-header">Fri</div>
+                         <div class="calendar-header">Sat</div>
+                         <!-- Day cells will be dynamically generated -->
+                     </div>
+                     
+                     <!-- Current Dasha Display -->
+                     <div class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100" id="current-dasha-display">
+                         <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Current Running Dasha</div>
+                         <div class="flex flex-wrap gap-3" id="current-dasha-lords">
+                             <!-- Will be populated dynamically -->
+                         </div>
+                     </div>
+                     
+                 </div>
+             </div>
+         </section>
     </main>
+
+    <!-- DAY DETAIL MODAL -->
+    <div class="day-modal-backdrop" id="day-modal-backdrop" onclick="closeDayModal(event)">
+        <div class="day-modal" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800" id="modal-date-title">January 17, 2026</h3>
+                <button onclick="closeDayModal()" class="btn btn-ghost btn-sm btn-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            
+            <!-- Dasha Chain -->
+            <div class="mb-4 p-3 bg-gray-50 rounded-lg border">
+                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Dasha Chain</div>
+                <div class="flex flex-wrap gap-2" id="modal-dasha-chain"></div>
+            </div>
+            
+            <!-- Event Probabilities -->
+            <div class="space-y-2" id="modal-events-list">
+                <!-- Will be populated dynamically -->
+            </div>
+        </div>
+    </div>
 
     <!-- SCRIPTS -->
     <script type="module">
         import astroEngine from './VedicAstroEngine.js';
         import jyotishTools from './JyotishTools.js';
+        import kpEventEngine, { EVENT_TYPES } from './KPEventEngine.js';
 
         let tsControl;
+        
+        // --- CALENDAR STATE ---
+        let calendarData = [];           // Generated calendar array
+        let calendarNatalData = null;    // Natal chart data for calendar
+        let activeEventTypes = new Set(['marriage', 'career', 'finance']); // Default selections
+        let currentCalendarMonth = new Date();  // Currently displayed month
+        let calendarBirthDate = null;
+        let calendarMoonLong = 0;
 
         window.onload = async () => {
             try {
@@ -648,9 +862,27 @@
 
                     renderDashboard(d1Result, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga);
                     
+                    // --- CALENDAR DATA STORAGE ---
+                    calendarBirthDate = dateStr;
+                    calendarMoonLong = moonObj.longitude;
+                    calendarNatalData = {
+                        planets: d1Result.planets,
+                        kpCusps: kpData.cusps
+                    };
+                    
+                    // Set default calendar date range (today + 90 days)
+                    const today = new Date();
+                    document.getElementById('calendarStartDate').value = today.toISOString().split('T')[0];
+                    const endDate = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+                    document.getElementById('calendarEndDate').value = endDate.toISOString().split('T')[0];
+                    
+                    // Initialize event pills
+                    initEventPills();
+                    
                     button.classList.remove('loading');
                     // Scroll to Output
                     document.getElementById('output').classList.remove('hidden');
+                    document.getElementById('event-calendar-section').classList.remove('hidden');
                     setTimeout(() => {
                          document.getElementById('output').classList.remove('opacity-0');
                          document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
@@ -795,16 +1027,29 @@
                 </tr>`;
             });
 
-            // DASHAS
+            // DASHAS - Store globally for deep dive
+            window.calculatedDashas = dashas;
             const dashaBody = document.getElementById('dasha-body');
             dashaBody.innerHTML = '';
-            dashas.forEach(d => {
-                // Highlight current dasha if logic added later
-                dashaBody.innerHTML += `<tr>
-                    <td class="font-bold">${d.lord}</td>
+            dashas.forEach((d, idx) => {
+                // Check if current date is within this Mahadasha
+                const now = new Date();
+                const isCurrent = now >= d.start && now <= d.end;
+                const currentClass = isCurrent ? 'bg-primary/10' : '';
+                
+                dashaBody.innerHTML += `<tr class="dasha-row cursor-pointer hover:bg-gray-100 ${currentClass}" data-dasha-idx="${idx}" onclick="toggleDashaExpand(${idx})">
+                    <td class="font-bold flex items-center gap-1">
+                        <svg class="h-3 w-3 transition-transform dasha-arrow" id="dasha-arrow-${idx}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        ${d.lord}
+                    </td>
                     <td class="font-mono text-xs">${d.start.toLocaleDateString()}</td>
                     <td class="font-mono text-xs">${d.end.toLocaleDateString()}</td>
                     <td class="text-gray-400">${d.duration.toFixed(1)}y</td>
+                </tr>
+                <tr class="dasha-expand hidden" id="dasha-expand-${idx}">
+                    <td colspan="4" class="p-0">
+                        <div class="pl-6 py-2 bg-gray-50 border-l-2 border-primary" id="antardasha-container-${idx}"></div>
+                    </td>
                 </tr>`;
             });
 
@@ -1052,11 +1297,12 @@
 
         function formatVerbalToHtml(text) {
             // Convert markdown style to HTML
+            // IMPORTANT: Process headers and lists BEFORE replacing newlines
             return text
-                .replace(/\n/g, '<br>')
-                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900">$1</strong>')
-                .replace(/^### (.*?)<br>/gm, '<h3 class="text-lg font-bold text-primary mt-6 mb-2 border-b border-gray-100 pb-1">$1</h3>')
-                .replace(/^- (.*?)<br>/gm, '<div class="ml-4 mb-1">• $1</div>');
+                .replace(/^### (.*?)$/gm, '<h3 class="text-lg font-bold text-primary mt-6 mb-2 border-b border-gray-100 pb-1">$1</h3>')
+                .replace(/^- (.*?)$/gm, '<div class="ml-4 mb-1">• $1</div>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+                .replace(/\n/g, '<br>');
         }
 
         window.toggleDataView = () => {
@@ -1098,6 +1344,100 @@
         };
 
         /* -----------------------------------------------------
+           MOBILE TAB NAVIGATION
+           ----------------------------------------------------- */
+        
+        window.switchMobileTab = (tabKey, tabElement) => {
+            // Remove active from all mobile content containers
+            document.querySelectorAll('.mobile-tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Add active to selected tab content
+            const targetContent = document.getElementById(`mobile-content-${tabKey}`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+            
+            // Update tab styles
+            document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('tab-active'));
+            tabElement.classList.add('tab-active');
+        };
+
+        /* -----------------------------------------------------
+           DASHA DEEP DIVE (Antardasha Expansion)
+           ----------------------------------------------------- */
+        
+        const VIM_ORDER = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"];
+        const DASHA_YEARS = { "Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7, "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17 };
+        
+        function calculateAntardasha(mahadasha) {
+            const results = [];
+            const totalDays = (mahadasha.end - mahadasha.start) / (1000 * 60 * 60 * 24);
+            const startIdx = VIM_ORDER.indexOf(mahadasha.lord);
+            let currentDate = new Date(mahadasha.start);
+            
+            for (let i = 0; i < 9; i++) {
+                const idx = (startIdx + i) % 9;
+                const lord = VIM_ORDER[idx];
+                const proportion = DASHA_YEARS[lord] / 120; // 120 = total Vimshottari years
+                const days = totalDays * proportion;
+                
+                const endDate = new Date(currentDate);
+                endDate.setTime(endDate.getTime() + (days * 24 * 60 * 60 * 1000));
+                
+                results.push({
+                    lord: lord,
+                    start: new Date(currentDate),
+                    end: new Date(endDate),
+                    durationMonths: (days / 30.4375).toFixed(1)
+                });
+                
+                currentDate = new Date(endDate);
+            }
+            return results;
+        }
+        
+        window.toggleDashaExpand = (idx) => {
+            const expandRow = document.getElementById(`dasha-expand-${idx}`);
+            const arrow = document.getElementById(`dasha-arrow-${idx}`);
+            const container = document.getElementById(`antardasha-container-${idx}`);
+            
+            if (expandRow.classList.contains('hidden')) {
+                // Expand - Calculate Antardasha
+                expandRow.classList.remove('hidden');
+                arrow.style.transform = 'rotate(90deg)';
+                
+                // Calculate Antardasha for this Mahadasha
+                const mahadasha = window.calculatedDashas[idx];
+                const antardashas = calculateAntardasha(mahadasha);
+                
+                let html = '<table class="table table-xs w-full">';
+                html += '<thead><tr class="text-gray-400 text-[10px]"><th>Bhukti</th><th>Start</th><th>End</th><th>Dur</th></tr></thead>';
+                html += '<tbody>';
+                
+                const now = new Date();
+                antardashas.forEach(ad => {
+                    const isCurrent = now >= ad.start && now <= ad.end;
+                    const rowClass = isCurrent ? 'bg-primary/20 font-semibold' : '';
+                    html += `<tr class="${rowClass}">
+                        <td class="font-medium">${mahadasha.lord}-${ad.lord}</td>
+                        <td class="font-mono text-[10px]">${ad.start.toLocaleDateString()}</td>
+                        <td class="font-mono text-[10px]">${ad.end.toLocaleDateString()}</td>
+                        <td class="text-gray-400">${ad.durationMonths}m</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } else {
+                // Collapse
+                expandRow.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        /* -----------------------------------------------------
            PROFILE MANAGEMENT (localStorage)
            ----------------------------------------------------- */
         
@@ -1122,11 +1462,11 @@
             }
             
             list.innerHTML = profiles.map((p, idx) => `
-                <li class="flex items-center justify-between gap-2 px-2 py-2 hover:bg-gray-50 rounded-lg group">
-                    <button onclick="loadProfile(${idx})" class="flex-1 text-left text-sm font-medium text-gray-700 hover:text-primary truncate">
+                <li class="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-2 py-2 hover:bg-gray-50 rounded-lg">
+                    <button onclick="loadProfile(${idx})" class="text-left text-sm font-medium text-gray-700 hover:text-primary truncate">
                         ${p.name || 'Unnamed'}
                     </button>
-                    <span class="text-[10px] text-gray-400 hidden group-hover:inline">${p.dob}</span>
+                    <span class="text-[10px] text-gray-400 whitespace-nowrap">${p.dob}</span>
                     <button onclick="deleteProfile(${idx})" class="btn btn-ghost btn-xs text-gray-400 hover:text-error">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </button>
@@ -1280,6 +1620,219 @@
             setTheme(newTheme);
         };
         
+        
+        /* =====================================================
+           EVENT CALENDAR FUNCTIONS
+           ===================================================== */
+        
+        // Initialize event pills
+        function initEventPills() {
+            const container = document.getElementById('event-pills-container');
+            if (!container) return;
+            
+            container.innerHTML = EVENT_TYPES.map(evt => {
+                const isActive = activeEventTypes.has(evt.id);
+                return `<div class="event-pill ${isActive ? 'active' : ''}" data-event-id="${evt.id}" onclick="toggleEventPill('${evt.id}')">
+                    <span class="pill-icon">${evt.icon}</span>
+                    <span>${evt.name}</span>
+                </div>`;
+            }).join('');
+        }
+        
+        window.toggleEventPill = (eventId) => {
+            if (activeEventTypes.has(eventId)) {
+                activeEventTypes.delete(eventId);
+            } else {
+                activeEventTypes.add(eventId);
+            }
+            // Update visual
+            const pill = document.querySelector(`[data-event-id="${eventId}"]`);
+            if (pill) pill.classList.toggle('active');
+            // Re-render calendar if data exists
+            if (calendarData.length > 0) {
+                renderCalendarMonth();
+            }
+        };
+        
+        window.generateEventCalendar = () => {
+            if (!calendarNatalData || !calendarBirthDate) {
+                alert('Please generate your horoscope first.');
+                return;
+            }
+            
+            const startDateEl = document.getElementById('calendarStartDate');
+            const endDateEl = document.getElementById('calendarEndDate');
+            
+            const startDate = startDateEl.value ? new Date(startDateEl.value) : new Date();
+            const endDate = endDateEl.value ? new Date(endDateEl.value) : new Date(startDate.getTime() + 90 * 24 * 60 * 60 * 1000);
+            
+            const days = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1;
+            
+            // Build house significators from natal data
+            kpEventEngine.buildHouseSignificators(calendarNatalData.planets, calendarNatalData.kpCusps);
+            
+            // Generate calendar
+            calendarData = kpEventEngine.generateCalendar(
+                calendarMoonLong,
+                calendarBirthDate,
+                calendarNatalData.planets,
+                calendarNatalData.kpCusps,
+                startDate,
+                Math.min(days, 365), // Cap at 1 year
+                null // All event types for data, filter in render
+            );
+            
+            currentCalendarMonth = new Date(startDate);
+            renderCalendarMonth();
+            
+            // Show current day's dasha
+            const todayData = calendarData.find(d => d.date === new Date().toISOString().split('T')[0]);
+            if (todayData) {
+                renderCurrentDasha(todayData.dasha);
+            }
+        };
+        
+        function renderCalendarMonth() {
+            const grid = document.getElementById('calendar-grid');
+            if (!grid) return;
+            
+            // Clear existing day cells (keep headers)
+            const headers = Array.from(grid.querySelectorAll('.calendar-header'));
+            grid.innerHTML = '';
+            headers.forEach(h => grid.appendChild(h));
+            
+            // Get month boundaries
+            const year = currentCalendarMonth.getFullYear();
+            const month = currentCalendarMonth.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDayOfWeek = firstDay.getDay();
+            
+            // Update title
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('calendar-month-title').textContent = `${monthNames[month]} ${year}`;
+            
+            // Empty cells before first day
+            for (let i = 0; i < startDayOfWeek; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-cell empty';
+                grid.appendChild(emptyCell);
+            }
+            
+            // Day cells
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayData = calendarData.find(d => d.date === dateStr);
+                
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+                cell.dataset.date = dateStr;
+                
+                if (dayData) {
+                    // Filter events by active types and get max score
+                    const activeEvents = dayData.events.filter(e => activeEventTypes.has(e.type));
+                    const maxScore = activeEvents.length > 0 ? Math.max(...activeEvents.map(e => e.score)) : 0;
+                    
+                    // Apply probability class
+                    if (maxScore >= 70) cell.classList.add('prob-high');
+                    else if (maxScore >= 40) cell.classList.add('prob-medium');
+                    else if (maxScore > 0) cell.classList.add('prob-low');
+                    else cell.classList.add('prob-very-low');
+                    
+                    cell.innerHTML = `
+                        <span class="day-num">${day}</span>
+                        ${maxScore > 0 ? `<span class="score-badge">${maxScore}%</span>` : ''}
+                    `;
+                    
+                    cell.onclick = () => openDayModal(dayData);
+                } else {
+                    cell.classList.add('prob-very-low');
+                    cell.innerHTML = `<span class="day-num">${day}</span>`;
+                }
+                
+                grid.appendChild(cell);
+            }
+        }
+        
+        window.changeCalendarMonth = (delta) => {
+            currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + delta);
+            renderCalendarMonth();
+        };
+        
+        function renderCurrentDasha(dasha) {
+            const container = document.getElementById('current-dasha-lords');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="flex items-center gap-1">
+                    <span class="text-xs text-gray-400">MD:</span>
+                    <span class="badge badge-primary">${dasha.mahadasha}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-xs text-gray-400">AD:</span>
+                    <span class="badge badge-secondary">${dasha.antardasha}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-xs text-gray-400">PD:</span>
+                    <span class="badge badge-accent">${dasha.pratyantar}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-xs text-gray-400">SD:</span>
+                    <span class="badge badge-ghost">${dasha.sookshma}</span>
+                </div>
+            `;
+        }
+        
+        function openDayModal(dayData) {
+            const backdrop = document.getElementById('day-modal-backdrop');
+            const dateTitle = document.getElementById('modal-date-title');
+            const dashaChain = document.getElementById('modal-dasha-chain');
+            const eventsList = document.getElementById('modal-events-list');
+            
+            // Set date title
+            const dateObj = new Date(dayData.date);
+            dateTitle.textContent = dateObj.toLocaleDateString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            
+            // Dasha chain
+            dashaChain.innerHTML = `
+                <span class="badge badge-primary badge-sm">${dayData.dasha.mahadasha}</span>
+                <span class="text-gray-400">→</span>
+                <span class="badge badge-secondary badge-sm">${dayData.dasha.antardasha}</span>
+                <span class="text-gray-400">→</span>
+                <span class="badge badge-accent badge-sm">${dayData.dasha.pratyantar}</span>
+                <span class="text-gray-400">→</span>
+                <span class="badge badge-ghost badge-sm">${dayData.dasha.sookshma}</span>
+            `;
+            
+            // Events list sorted by score
+            const sortedEvents = [...dayData.events].sort((a, b) => b.score - a.score);
+            eventsList.innerHTML = sortedEvents.map(evt => {
+                const probClass = evt.score >= 70 ? 'prob-high' : 
+                                  evt.score >= 40 ? 'prob-medium' : 
+                                  evt.score > 0 ? 'prob-low' : 'prob-very-low';
+                const isActive = activeEventTypes.has(evt.type);
+                return `
+                    <div class="flex items-center justify-between p-3 rounded-lg ${probClass} ${isActive ? '' : 'opacity-50'}">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">${evt.icon}</span>
+                            <span class="font-medium text-sm">${evt.name}</span>
+                        </div>
+                        <span class="font-bold">${evt.score}%</span>
+                    </div>
+                `;
+            }).join('');
+            
+            backdrop.classList.add('active');
+        }
+        
+        window.closeDayModal = (event) => {
+            if (event && event.target !== document.getElementById('day-modal-backdrop')) return;
+            document.getElementById('day-modal-backdrop').classList.remove('active');
+        };
+
         // Initialize theme on page load
         (function initTheme() {
             const storedTheme = getStoredTheme();

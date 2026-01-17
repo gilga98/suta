@@ -249,7 +249,10 @@ class JyotishTools {
         let manglik = { isPresent: false, reason: "None" };
         let kalsarpa = { isPresent: false, type: "None" };
         if (asc && mars) {
-             const house = Math.floor(((mars.longitude - asc.longitude + 360) % 360) / 30) + 1;
+             // Calculate house based on sign positions (not degree difference)
+             const marsSignId = Math.floor(mars.longitude / 30);
+             const ascSignId = Math.floor(asc.longitude / 30);
+             const house = ((marsSignId - ascSignId + 12) % 12) + 1;
              if ([1, 2, 4, 7, 8, 12].includes(house)) {
                  manglik = { isPresent: true, reason: `Mars in House ${house}` };
              }
