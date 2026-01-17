@@ -35,14 +35,71 @@
     <style>
         body { font-family: 'Outfit', sans-serif; }
         [data-theme="light"] body { background-color: #f7f7f7; }
-        [data-theme="dark"] body { background-color: #1a1a2e; }
+        [data-theme="dark"] body { background-color: #0f0f1a; }
         
-        /* Dark mode overrides for custom elements */
-        [data-theme="dark"] .chart-grid { background: #374151; border-color: #4b5563; }
-        [data-theme="dark"] .chart-cell { background: #1f2937; }
-        [data-theme="dark"] .chart-center { background: #111827; }
+        /* Dark mode overrides for cards and containers */
+        [data-theme="dark"] .card { background-color: #1a1a2e !important; border-color: #2d2d44 !important; }
+        [data-theme="dark"] .bg-base-100 { background-color: #1a1a2e !important; }
+        [data-theme="dark"] .bg-gray-50 { background-color: #16162a !important; }
+        [data-theme="dark"] .bg-gray-100 { background-color: #1f1f35 !important; }
+        [data-theme="dark"] .border-gray-100 { border-color: #2d2d44 !important; }
+        [data-theme="dark"] .border-gray-200 { border-color: #3d3d55 !important; }
+        
+        /* Dark mode text colors */
+        [data-theme="dark"] .text-gray-400 { color: #9ca3af !important; }
+        [data-theme="dark"] .text-gray-500 { color: #9ca3af !important; }
+        [data-theme="dark"] .text-gray-600 { color: #d1d5db !important; }
+        [data-theme="dark"] .text-gray-700 { color: #e5e7eb !important; }
+        [data-theme="dark"] .text-gray-800 { color: #f3f4f6 !important; }
+        [data-theme="dark"] .text-secondary { color: #e5e7eb !important; }
+        
+        /* Dark mode inputs */
+        [data-theme="dark"] .input { background-color: #0f0f1a !important; border-color: #3d3d55 !important; color: #e5e7eb !important; }
+        [data-theme="dark"] .input:focus { border-color: #ff385c !important; }
+        [data-theme="dark"] .select { background-color: #0f0f1a !important; border-color: #3d3d55 !important; color: #e5e7eb !important; }
+        
+        /* Dark mode navbar */
+        [data-theme="dark"] nav { background-color: #1a1a2e !important; border-color: #2d2d44 !important; }
+        
+        /* Dark mode tables */
+        [data-theme="dark"] .table { color: #e5e7eb; }
+        [data-theme="dark"] .table tr { border-color: #2d2d44 !important; }
+        [data-theme="dark"] .table th { background-color: #16162a !important; color: #9ca3af !important; }
+        [data-theme="dark"] .table-zebra tbody tr:nth-child(even) { background-color: #16162a !important; }
+        [data-theme="dark"] .table tr:hover, [data-theme="dark"] .hover\\:bg-gray-50:hover { background-color: #232340 !important; }
+        
+        /* Dark mode badges and buttons */
+        [data-theme="dark"] .badge { border-color: #3d3d55 !important; }
+        [data-theme="dark"] .btn-ghost { color: #e5e7eb !important; }
+        [data-theme="dark"] .btn-ghost:hover { background-color: #2d2d44 !important; }
+        [data-theme="dark"] .btn-outline { border-color: #3d3d55 !important; color: #e5e7eb !important; }
+        
+        /* Dark mode tabs */
+        [data-theme="dark"] .tabs-boxed { background-color: #16162a !important; }
+        [data-theme="dark"] .tab { color: #9ca3af !important; }
+        [data-theme="dark"] .tab-active { background-color: #2d2d44 !important; color: #fff !important; }
+        
+        /* Dark mode dropdown */
+        [data-theme="dark"] .dropdown-content { background-color: #1a1a2e !important; border-color: #2d2d44 !important; }
+        [data-theme="dark"] .dropdown-content li:hover { background-color: #232340 !important; }
+        
+        /* Dark mode collapse/accordion */
+        [data-theme="dark"] .collapse { background-color: #16162a !important; border-color: #2d2d44 !important; }
+        [data-theme="dark"] .collapse-title { color: #9ca3af !important; }
+        
+        /* Dark mode divider */
+        [data-theme="dark"] .divider:before, [data-theme="dark"] .divider:after { background-color: #2d2d44 !important; }
+        
+        /* Dark mode chart elements */
+        [data-theme="dark"] .chart-grid { background: #2d2d44; border-color: #3d3d55; }
+        [data-theme="dark"] .chart-cell { background: #1a1a2e; }
+        [data-theme="dark"] .chart-center { background: #0f0f1a; }
         [data-theme="dark"] .rashi-label { color: #9ca3af; }
-        [data-theme="dark"] .planet-glyph { background: rgba(0,0,0,0.5); }
+        [data-theme="dark"] .house-label { color: #ff6b8a; }
+        [data-theme="dark"] .planet-glyph { background: rgba(0,0,0,0.6); }
+        
+        /* Dark mode legend */
+        [data-theme="dark"] .legend-swatch { border-color: rgba(255,255,255,0.2) !important; }
         
         /* Rashi colors in dark mode - slightly muted */
         [data-theme="dark"] .rashi-sun { background: linear-gradient(135deg, #78350f 0%, #451a03 100%); }
@@ -112,7 +169,7 @@
     </div>
 
     <!-- NAVBAR -->
-    <nav class="bg-white border-b border-gray-100 sticky top-0 z-40 transform transition-all duration-300" id="navbar">
+    <nav class="bg-base-100 border-b border-gray-100 sticky top-0 z-40 transform transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="text-2xl">🕉️</span>
@@ -126,7 +183,7 @@
                      <span class="text-xs font-medium hidden sm:inline">Profiles</span>
                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                   </label>
-                  <div tabindex="0" class="dropdown-content z-50 menu p-3 shadow-xl bg-white rounded-xl w-72 border border-gray-100">
+                  <div tabindex="0" class="dropdown-content z-50 menu p-3 shadow-xl bg-base-100 rounded-xl w-72 border border-gray-100">
                      <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-2">Saved Profiles</div>
                      <ul id="profilesList" class="max-h-48 overflow-y-auto custom-scroll">
                         <li class="text-gray-400 text-xs px-2 py-2">No saved profiles</li>
@@ -153,7 +210,7 @@
 
         <!-- INPUT SECTION (HERO) -->
         <section id="input-section" class="w-full transition-all duration-500 ease-in-out mx-auto max-w-3xl">
-            <div class="card bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+            <div class="card bg-base-100 shadow-xl rounded-2xl overflow-hidden border border-gray-100">
                 <div class="card-body p-6 sm:p-8">
                     <div class="text-center mb-6">
                         <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-pink-600">Enter Birth Details</h1>
@@ -234,7 +291,7 @@
                  
                  <!-- LEFT COLUMN: CHARTS (Sticky on Desktop) -->
                  <div class="lg:col-span-4 flex flex-col gap-6">
-                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-4 sticky top-24">
+                     <div class="card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-4 sticky top-24">
                          <div role="tablist" class="tabs tabs-boxed bg-gray-100 p-1 rounded-xl mb-4">
                              <a role="tab" class="tab tab-active rounded-lg transition-all" onclick="switchChartTab('d1', this)">Rashi (D1)</a>
                              <a role="tab" class="tab rounded-lg transition-all" onclick="switchChartTab('d9', this)">Navamsa</a>
@@ -278,7 +335,7 @@
                      </div>
                      
                      <!-- PANCHANGA CARD -->
-                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-4">
+                     <div class="card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-4">
                          <h3 class="font-bold text-gray-800 mb-3 px-2">Panchanga</h3>
                          <div class="overflow-x-auto">
                              <table class="table table-sm text-xs">
@@ -313,7 +370,7 @@
                  <div class="lg:col-span-8 flex flex-col gap-8">
                      
                      <!-- PLANETARY POSITIONS -->
-                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-6">
+                     <div class="card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-6">
                          <h3 class="font-bold text-xl mb-6 text-gray-800 border-b pb-2">Planetary Positions</h3>
                          <div class="overflow-x-auto custom-scroll">
                              <table class="table w-full text-center">
@@ -325,6 +382,7 @@
                                          <th class="py-4">Nakshatra</th>
                                          <th class="py-4">Pada</th>
                                          <th class="py-4">Lord</th>
+                                        <th class="py-4">Star Lord</th>
                                          <th class="rounded-r-lg py-4">Status</th>
                                      </tr>
                                  </thead>
@@ -334,7 +392,7 @@
                      </div>
 
                      <!-- DASHA & STRENGTH -->
-                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-6">
+                     <div class="card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-6">
                          <h3 class="font-bold text-xl mb-6 text-gray-800 border-b pb-2">Dasha & Strength</h3>
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                              <div>
@@ -359,7 +417,7 @@
                      </div>
 
                      <!-- KP SYSTEM -->
-                     <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-6">
+                     <div class="card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-6">
                         <h3 class="font-bold text-xl mb-6 text-gray-800 border-b pb-2">KP System</h3>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div>
@@ -384,7 +442,7 @@
                     </div>
 
                     <!-- ANALYSIS -->
-                    <div class="card bg-white shadow-lg rounded-2xl border border-gray-100 p-6">
+                    <div class="card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-6">
                         <h3 class="font-bold text-xl mb-6 text-gray-800 border-b pb-2">Detailed Analysis</h3>
                         <div class="space-y-8">
                             <!-- Doshas -->
@@ -396,13 +454,13 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
                                     <h4 class="font-bold text-lg mb-4 text-gray-600">Avkahada Chakra</h4>
-                                    <table class="table border rounded-lg bg-white">
+                                    <table class="table border rounded-lg bg-base-100">
                                         <tbody id="avkahada-body"></tbody>
                                     </table>
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-lg mb-4 text-gray-600">Jaimini Karakas</h4>
-                                    <table class="table border rounded-lg bg-white">
+                                    <table class="table border rounded-lg bg-base-100">
                                         <thead><tr class="bg-gray-50"><th>Karaka</th><th>Planet</th><th>Deg</th></tr></thead>
                                         <tbody id="jaimini-body"></tbody>
                                     </table>
@@ -417,7 +475,7 @@
 
          <!-- DATA & NARRATION SECTION -->
          <section id="data-export-section" class="w-full transition-all duration-500 ease-in-out hidden">
-             <div class="card bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+             <div class="card bg-base-100 shadow-xl rounded-2xl overflow-hidden border border-gray-100">
                  <div class="card-body p-6 sm:p-8">
                      <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                          <h2 class="text-2xl font-bold text-gray-800">Data & Narration</h2>
@@ -674,6 +732,7 @@
             tbody.innerHTML = '';
             data.planets.forEach(p => {
                 const signLord = jyotishTools.getSignLord(p.sign);
+                const starLord = jyotishTools.getNakshatraLord(p.nakshatraId);
                 const pada = Math.floor((p.longitude % 13.3333333) / 3.3333333) + 1;
                 const status = (p.isRetrograde) 
                     ? '<span class="badge badge-warning badge-xs">Ret</span>' 
@@ -689,6 +748,7 @@
                     <td>${p.nakshatra}</td>
                     <td>${pada}</td>
                     <td>${signLord}</td>
+                    <td class="font-bold text-primary">${starLord}</td>
                     <td>${status}</td>
                 </tr>`;
             });
