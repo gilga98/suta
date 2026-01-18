@@ -897,9 +897,9 @@
             <h3 id="modal-date-title" class="font-bold text-xl mb-4 text-center">Date Here</h3>
             
             <!-- Dasha Chain -->
-            <div class="bg-base-200 p-3 rounded-lg mb-6">
+            <div class="bg-base-200 p-3 rounded-lg mb-6 overflow-x-auto">
                 <div class="text-center text-xs opacity-50 mb-2 uppercase tracking-wide font-bold">Active Dasha Chain</div>
-                <div id="modal-dasha-chain" class="grid grid-cols-4 gap-2 text-center">
+                <div id="modal-dasha-chain" class="grid grid-cols-4 gap-2 text-center min-w-max">
                     <!-- JS Injected -->
                 </div>
             </div>
@@ -1084,6 +1084,14 @@
                     
                     // Initialize event pills
                     initEventPills();
+                    
+                    // Calculate and render current running dasha immediately
+                    const currentDasha = kpEventEngine.calculateDeepDasha(
+                        calendarMoonLong,
+                        calendarBirthDate,
+                        today
+                    );
+                    renderCurrentDasha(currentDasha);
                     
                     button.classList.remove('loading');
                     // Scroll to Output
@@ -1333,7 +1341,7 @@
                 if (i===5 || i===6 || i===9 || i===10) {
                      if(i===5) {
                          div.className = "chart-center";
-                         div.innerHTML = `<span class="font-bold text-gray-300 text-[10px] tracking-widest">${vargaKey.toUpperCase()}</span>`;
+                         div.innerHTML = `<span class="font-bold text-gray-300 text-[10px] border border-gray-700 tracking-widest">${vargaKey.toUpperCase()}</span>`;
                          container.appendChild(div);
                      }
                      continue; 
