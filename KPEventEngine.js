@@ -311,7 +311,7 @@ class KPEventEngine {
     calculateEventProbability(eventType, dashaData, transitData = null) {
         const requiredHouses = new Set(eventType.houses);
         let score = 0;
-        let maxScore = 100;
+        let contributors = [];
         
         // Weight distribution for dasha levels
         const weights = {
@@ -334,13 +334,27 @@ class KPEventEngine {
             
             // Count how many required houses this lord signifies
             let matchCount = 0;
+            let matched = [];
             requiredHouses.forEach(h => {
-                if (signifiedHouses.has(h)) matchCount++;
+                if (signifiedHouses.has(h)) {
+                    matchCount++;
+                    matched.push(h);
+                }
             });
             
             // Proportional score for this level
-            const matchRatio = matchCount / requiredHouses.size;
-            score += weights[level] * matchRatio;
+            if (matchCount > 0) {
+                const matchRatio = matchCount / requiredHouses.size;
+                const points = weights[level] * matchRatio;
+                score += points;
+                
+                contributors.push({
+                    level: level,
+                    lord: lord,
+                    matched: matched,
+                    points: points.toFixed(1)
+                });
+            }
         });
         
         // Bonus: If all dasha lords signify at least one required house
@@ -348,7 +362,12 @@ class KPEventEngine {
             const sig = this.houseSignificators[lord] || new Set();
             return Array.from(requiredHouses).some(h => sig.has(h));
         });
-        if (allMatch) score = Math.min(100, score * 1.15); // 15% bonus
+        
+        if (allMatch) {
+            const bonus = score * 0.15;
+            score = Math.min(100, score + bonus);
+            contributors.push({ level: "bonus", lord: "All Lords", matched: ["Synergy"], points: bonus.toFixed(1) });
+        }
         
         // Transit boost (if transit data provided)
         if (transitData && transitData.planets) {
@@ -356,12 +375,18 @@ class KPEventEngine {
             if (transitMoon) {
                 const moonStarLord = NAKSHATRA_LORDS[transitMoon.nakshatraId];
                 const moonSig = this.houseSignificators[moonStarLord] || new Set();
-                const moonMatch = Array.from(requiredHouses).some(h => moonSig.has(h));
-                if (moonMatch) score = Math.min(100, score + 5); // Transit Moon trigger
+                const moonMatch = Array.from(requiredHouses).filter(h => moonSig.has(h));
+                if (moonMatch.length > 0) {
+                    score = Math.min(100, score + 5); // Transit Moon trigger
+                    contributors.push({ level: "transit", lord: "Moon (Star: " + moonStarLord + ")", matched: moonMatch, points: "5.0" });
+                }
             }
         }
         
-        return Math.round(Math.max(0, Math.min(100, score)));
+        return {
+            score: Math.round(Math.max(0, Math.min(100, score))),
+            contributors: contributors
+        };
     }
 
     // --- CALENDAR GENERATION ---
@@ -396,13 +421,17 @@ class KPEventEngine {
             const dasha = this.calculateDeepDasha(moonLongitude, birthDateStr, currentDate);
             
             // Calculate probability for each event type
-            const events = eventTypesToUse.map(eventType => ({
-                type: eventType.id,
-                name: eventType.name,
-                icon: eventType.icon,
-                score: this.calculateEventProbability(eventType, dasha),
-                isNegative: eventType.isNegative || false
-            }));
+            const events = eventTypesToUse.map(eventType => {
+                const result = this.calculateEventProbability(eventType, dasha);
+                return {
+                    type: eventType.id,
+                    name: eventType.name,
+                    icon: eventType.icon,
+                    score: result.score,
+                    contributors: result.contributors,
+                    isNegative: eventType.isNegative || false
+                };
+            });
             
             calendar.push({
                 date: currentDate.toISOString().split('T')[0],

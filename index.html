@@ -208,25 +208,136 @@
         [data-theme="dark"] .event-pill:hover { border-color: #ff6b8a; }
         [data-theme="dark"] .event-pill.active { background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%); color: white; }
         
-        /* Calendar Grid */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .calendar-header { text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #9ca3af; padding: 8px 4px; letter-spacing: 0.05em; }
-        .calendar-cell { 
-            aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;
-            position: relative; min-height: 50px; border: 1px solid transparent;
+        /* Calendar CSS */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
         }
-        .calendar-cell:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10; }
-        .calendar-cell .day-num { font-weight: 600; font-size: 14px; }
-        .calendar-cell .score-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-top: 2px; background: rgba(0,0,0,0.1); }
-        .calendar-cell.empty { background: transparent; cursor: default; }
-        .calendar-cell.empty:hover { transform: none; box-shadow: none; }
+        
+        .calendar-header {
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-base-content);
+            opacity: 0.7;
+            padding: 0.5rem 0;
+        }
+        
+        .calendar-cell {
+            aspect-ratio: 1;
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+         
+        /* Mobile List View for Calendar */
+        @media (max-width: 640px) {
+            .calendar-container {
+                padding: 0.5rem;
+            }
+            
+            .calendar-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .calendar-header {
+                display: none; /* Hide Sun, Mon... headers on mobile */
+            }
+            
+            .calendar-cell {
+                aspect-ratio: auto; /* Remove square aspect ratio */
+                flex-direction: row; /* Horizontal layout */
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem;
+                background-color: var(--color-base-200); /* Card look */
+                border: 1px solid var(--color-base-300);
+            }
+            
+            .calendar-cell.empty {
+                display: none; /* Hide empty filler cells */
+            }
+            
+            .day-num {
+                font-size: 1.1rem;
+                font-weight: 700;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .day-name-mobile {
+                font-size: 0.75rem;
+                font-weight: normal;
+                opacity: 0.7;
+                display: block !important;
+            }
+
+            .score-badge {
+                font-size: 0.9rem !important;
+                padding: 0.25rem 0.75rem !important;
+            }
+        }
+        
+        .day-name-mobile {
+            display: none; /* Hidden on desktop */
+        }
+        
+        .calendar-cell:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .day-num {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .score-badge {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 9999px;
+            color: white;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
         
         /* Probability Colors */
-        .prob-high { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #991b1b; border-color: #fca5a5; }
-        .prob-medium { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #92400e; border-color: #fcd34d; }
-        .prob-low { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); color: #065f46; border-color: #6ee7b7; }
-        .prob-very-low { background: #f3f4f6; color: #6b7280; }
+        .prob-high { background-color: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.3); }
+        .prob-high .score-badge { background-color: #16a34a; }
+        
+        .prob-medium { background-color: rgba(234, 179, 8, 0.15); border-color: rgba(234, 179, 8, 0.3); }
+        .prob-medium .score-badge { background-color: #ca8a04; }
+        
+        .prob-low { background-color: rgba(249, 115, 22, 0.15); border-color: rgba(249, 115, 22, 0.3); }
+        .prob-low .score-badge { background-color: #ea580c; }
+        
+        .prob-very-low { background-color: rgba(100, 116, 139, 0.1); border-color: rgba(100, 116, 139, 0.2); }
+        .prob-very-low .score-badge { display: none; } /* Hide score 0 */
+
+        /* Contributors List in Modal */
+        .contributor-item {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: var(--color-base-200);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .contributor-level {
+            text-transform: capitalize;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
         
         [data-theme="dark"] .prob-high { background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%); color: #fecaca; border-color: #b91c1c; }
         [data-theme="dark"] .prob-medium { background: linear-gradient(135deg, #78350f 0%, #92400e 100%); color: #fde68a; border-color: #b45309; }
@@ -677,11 +788,93 @@
                      
                      <!-- Current Dasha Display -->
                      <div class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100" id="current-dasha-display">
-                         <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Current Running Dasha</div>
-                         <div class="flex flex-wrap gap-3" id="current-dasha-lords">
-                             <!-- Will be populated dynamically -->
-                         </div>
-                     </div>
+                        <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Current Running Dasha</div>
+                        <div class="flex flex-wrap gap-3" id="current-dasha-lords">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Static KP Guide Section -->
+                    <div class="mt-8 pt-8 border-t border-base-200">
+                        <div class="collapse collapse-arrow bg-base-100 border border-base-200 rounded-lg shadow-sm">
+                            <input type="checkbox" /> 
+                            <div class="collapse-title text-xl font-medium flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                                </svg>
+                                KP Event Rule Book (Reference)
+                            </div>
+                            <div class="collapse-content"> 
+                                <p class="mb-4 opacity-70 text-sm">KP Astrology assigns specific house combinations for different life events. This calendar calculates probabilities based on how many of these houses are activated by your current Dasha planets.</p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>💍</span> Marriage / Relationship
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">2</span> <span class="badge badge-sm badge-neutral">7</span> <span class="badge badge-sm badge-neutral">11</span></div>
+                                        <div class="text-xs opacity-60 mt-1">2=Family, 7=Spouse, 11=Desires</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>💼</span> Career / Job
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">2</span> <span class="badge badge-sm badge-neutral">6</span> <span class="badge badge-sm badge-neutral">10</span></div>
+                                        <div class="text-xs opacity-60 mt-1">10=Profession, 6=Service, 2=Wealth</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>💰</span> Finance / Money
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">2</span> <span class="badge badge-sm badge-neutral">6</span> <span class="badge badge-sm badge-neutral">11</span></div>
+                                        <div class="text-xs opacity-60 mt-1">2=Accumulation, 11=Gains</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>🏠</span> Property / Vehicle
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">4</span> <span class="badge badge-sm badge-neutral">11</span> <span class="badge badge-sm badge-neutral">12</span></div>
+                                        <div class="text-xs opacity-60 mt-1">4=Assets, 11=Gain of Property</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>👶</span> Childbirth
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">2</span> <span class="badge badge-sm badge-neutral">5</span> <span class="badge badge-sm badge-neutral">11</span></div>
+                                        <div class="text-xs opacity-60 mt-1">5=Progeny, 2=Family extension</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>✈️</span> Foreign Travel
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">3</span> <span class="badge badge-sm badge-neutral">9</span> <span class="badge badge-sm badge-neutral">12</span></div>
+                                        <div class="text-xs opacity-60 mt-1">9=Long travel, 12=Foreign land</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>📚</span> Education
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">4</span> <span class="badge badge-sm badge-neutral">9</span> <span class="badge badge-sm badge-neutral">11</span></div>
+                                        <div class="text-xs opacity-60 mt-1">4=Basic, 9=Higher Education</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>🏥</span> Health Issues
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">1</span> <span class="badge badge-sm badge-neutral">6</span> <span class="badge badge-sm badge-neutral">8</span></div>
+                                        <div class="text-xs opacity-60 mt-1">6=Disease, 8=Chronic/Surgery</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>⚖️</span> Legal / Litigation
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">6</span> <span class="badge badge-sm badge-neutral">7</span> <span class="badge badge-sm badge-neutral">12</span></div>
+                                        <div class="text-xs opacity-60 mt-1">6=Arguments, 12=Punishment</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                      
                  </div>
              </div>
@@ -689,24 +882,29 @@
     </main>
 
     <!-- DAY DETAIL MODAL -->
-    <div class="day-modal-backdrop" id="day-modal-backdrop" onclick="closeDayModal(event)">
-        <div class="day-modal" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-800" id="modal-date-title">January 17, 2026</h3>
-                <button onclick="closeDayModal()" class="btn btn-ghost btn-sm btn-circle">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-            </div>
+    <div id="day-modal-backdrop" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4" onclick="closeDayModal()">
+        <div class="modal-box w-full max-w-lg bg-base-100 rounded-xl shadow-2xl relative" onclick="event.stopPropagation()">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="closeDayModal()">✕</button>
+            
+            <h3 id="modal-date-title" class="font-bold text-xl mb-4 text-center">Date Here</h3>
             
             <!-- Dasha Chain -->
-            <div class="mb-4 p-3 bg-gray-50 rounded-lg border">
-                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Dasha Chain</div>
-                <div class="flex flex-wrap gap-2" id="modal-dasha-chain"></div>
+            <div class="bg-base-200 p-3 rounded-lg mb-6">
+                <div class="text-center text-xs opacity-50 mb-2 uppercase tracking-wide font-bold">Active Dasha Chain</div>
+                <div id="modal-dasha-chain" class="grid grid-cols-4 gap-2 text-center">
+                    <!-- JS Injected -->
+                </div>
             </div>
             
-            <!-- Event Probabilities -->
-            <div class="space-y-2" id="modal-events-list">
-                <!-- Will be populated dynamically -->
+            <div class="divider text-xs opacity-50">PREDICTED EVENTS</div>
+            
+            <!-- Events List -->
+            <div id="modal-events-list" class="max-h-[50vh] overflow-y-auto custom-scroll pr-1">
+                <!-- JS Injected -->
+            </div>
+            
+            <div class="modal-action justify-center mt-6">
+                <button class="btn btn-primary w-full" onclick="closeDayModal()">Close</button>
             </div>
         </div>
     </div>
@@ -1706,11 +1904,12 @@
             const month = currentCalendarMonth.getMonth();
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
-            const startDayOfWeek = firstDay.getDay();
+            const startDayOfWeek = firstDay.getDay(); // 0 = Sun
             
             // Update title
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
                                'July', 'August', 'September', 'October', 'November', 'December'];
+            const dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             document.getElementById('calendar-month-title').textContent = `${monthNames[month]} ${year}`;
             
             // Empty cells before first day
@@ -1725,6 +1924,10 @@
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dayData = calendarData.find(d => d.date === dateStr);
                 
+                // Determine Day Name for mobile view
+                const currentDayOfWeekIdx = (startDayOfWeek + (day - 1)) % 7;
+                const dayName = dayNamesShort[currentDayOfWeekIdx];
+                
                 const cell = document.createElement('div');
                 cell.className = 'calendar-cell';
                 cell.dataset.date = dateStr;
@@ -1733,6 +1936,7 @@
                     // Filter events by active types and get max score
                     const activeEvents = dayData.events.filter(e => activeEventTypes.has(e.type));
                     const maxScore = activeEvents.length > 0 ? Math.max(...activeEvents.map(e => e.score)) : 0;
+                    const dominantEvent = activeEvents.length > 0 ? activeEvents.reduce((a, b) => a.score > b.score ? a : b) : null;
                     
                     // Apply probability class
                     if (maxScore >= 70) cell.classList.add('prob-high');
@@ -1741,14 +1945,26 @@
                     else cell.classList.add('prob-very-low');
                     
                     cell.innerHTML = `
-                        <span class="day-num">${day}</span>
-                        ${maxScore > 0 ? `<span class="score-badge">${maxScore}%</span>` : ''}
+                        <div class="day-num">
+                            <span>${day}</span>
+                            <span class="day-name-mobile">${dayName}</span>
+                        </div>
+                        ${dominantEvent && maxScore > 0 ? `
+                            <div class="flex items-center gap-1">
+                                <span class="text-lg">${dominantEvent.icon}</span>
+                                <span class="score-badge">${maxScore}%</span>
+                            </div>
+                        ` : ''}
                     `;
                     
-                    cell.onclick = () => openDayModal(dayData);
+                    cell.onclick = () => openDayModal(dayData, dayName);
                 } else {
                     cell.classList.add('prob-very-low');
-                    cell.innerHTML = `<span class="day-num">${day}</span>`;
+                    cell.innerHTML = `
+                        <div class="day-num">
+                            <span>${day}</span>
+                            <span class="day-name-mobile">${dayName}</span>
+                        </div>`;
                 }
                 
                 grid.appendChild(cell);
@@ -1784,7 +2000,7 @@
             `;
         }
         
-        function openDayModal(dayData) {
+        function openDayModal(dayData, dayName) {
             const backdrop = document.getElementById('day-modal-backdrop');
             const dateTitle = document.getElementById('modal-date-title');
             const dashaChain = document.getElementById('modal-dasha-chain');
@@ -1792,40 +2008,78 @@
             
             // Set date title
             const dateObj = new Date(dayData.date);
-            dateTitle.textContent = dateObj.toLocaleDateString('en-US', { 
+            const formattedDate = dateObj.toLocaleDateString('en-US', { 
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
             });
+            dateTitle.textContent = formattedDate;
             
             // Dasha chain
             dashaChain.innerHTML = `
-                <span class="badge badge-primary badge-sm">${dayData.dasha.mahadasha}</span>
-                <span class="text-gray-400">→</span>
-                <span class="badge badge-secondary badge-sm">${dayData.dasha.antardasha}</span>
-                <span class="text-gray-400">→</span>
-                <span class="badge badge-accent badge-sm">${dayData.dasha.pratyantar}</span>
-                <span class="text-gray-400">→</span>
-                <span class="badge badge-ghost badge-sm">${dayData.dasha.sookshma}</span>
+                <div class="stat place-items-center">
+                    <div class="stat-title text-xs">Mahadasha</div>
+                    <div class="stat-value text-lg text-primary">${dayData.dasha.mahadasha}</div>
+                </div>
+                <div class="stat place-items-center">
+                    <div class="stat-title text-xs">Antardasha</div>
+                    <div class="stat-value text-lg text-secondary">${dayData.dasha.antardasha}</div>
+                </div>
+                <div class="stat place-items-center">
+                    <div class="stat-title text-xs">Pratyantar</div>
+                    <div class="stat-value text-lg text-accent">${dayData.dasha.pratyantar}</div>
+                </div>
+                <div class="stat place-items-center">
+                    <div class="stat-title text-xs">Sookshma</div>
+                    <div class="stat-value text-lg">${dayData.dasha.sookshma}</div>
+                </div>
             `;
             
-            // Events list sorted by score
-            const sortedEvents = [...dayData.events].sort((a, b) => b.score - a.score);
-            eventsList.innerHTML = sortedEvents.map(evt => {
-                const probClass = evt.score >= 70 ? 'prob-high' : 
-                                  evt.score >= 40 ? 'prob-medium' : 
-                                  evt.score > 0 ? 'prob-low' : 'prob-very-low';
-                const isActive = activeEventTypes.has(evt.type);
-                return `
-                    <div class="flex items-center justify-between p-3 rounded-lg ${probClass} ${isActive ? '' : 'opacity-50'}">
-                        <div class="flex items-center gap-2">
-                            <span class="text-lg">${evt.icon}</span>
-                            <span class="font-medium text-sm">${evt.name}</span>
+            // Active events with reasoning
+            const activeEvents = dayData.events
+                .filter(e => activeEventTypes.has(e.type) && e.score > 0)
+                .sort((a, b) => b.score - a.score);
+                
+            if (activeEvents.length > 0) {
+                eventsList.innerHTML = activeEvents.map(e => `
+                    <div class="p-4 bg-base-200 rounded-lg mb-4">
+                        <div class="flex items-center justify-between mb-3 border-b border-base-300 pb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">${e.icon}</span>
+                                <span class="font-bold text-lg">${e.name}</span>
+                            </div>
+                            <div class="badge ${e.score >= 70 ? 'badge-success' : (e.score >= 40 ? 'badge-warning' : 'badge-ghost')} text-white font-bold p-3">
+                                ${e.score}% ${e.score >= 70 ? 'High' : (e.score >= 40 ? 'Medium' : 'Low')}
+                            </div>
                         </div>
-                        <span class="font-bold">${evt.score}%</span>
+                        
+                        <div class="text-sm opacity-80 mb-2 font-semibold">Contributing Factors (Why?):</div>
+                        <div class="space-y-2">
+                            ${e.contributors && e.contributors.length > 0 ? e.contributors.map(c => `
+                                <div class="contributor-item flex justify-between items-center">
+                                    <div>
+                                        <div class="contributor-level">${c.level === 'bonus' ? '✨ Synergy Bonus' : (c.level === 'transit' ? '🪐 Transit Trigger' : c.level)}</div>
+                                        <div class="text-xs opacity-70">
+                                            ${c.level === 'bonus' 
+                                                ? 'All dasha lords signify event houses' 
+                                                : `${c.lord} signifies houses ${c.matched.join(', ')}`}
+                                        </div>
+                                    </div>
+                                    <div class="font-mono font-bold text-success">+${c.points}%</div>
+                                </div>
+                            `).join('') : '<div class="text-xs opacity-50 italic">No direct significators found.</div>'}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                eventsList.innerHTML = `
+                    <div class="text-center py-8 opacity-50">
+                        <div class="text-4xl mb-2">😴</div>
+                        <div>No significant events predicted for this day based on selected filters.</div>
                     </div>
                 `;
-            }).join('');
+            }
             
-            backdrop.classList.add('active');
+            // Show modal
+            backdrop.classList.remove('hidden');
         }
         
         window.closeDayModal = (event) => {
