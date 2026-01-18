@@ -726,22 +726,30 @@
                  <div class="card-body p-6 sm:p-8">
                      
                      <!-- Header -->
-                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                     <div class="flex flex-col gap-4 mb-6">
                          <div>
                              <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-pink-600">
                                  Event Probability Calendar
                              </h2>
                              <p class="text-gray-500 text-sm mt-1">KP System Analysis with Deep Dasha (Pratyantar → Sookshma)</p>
                          </div>
-                         <div class="flex items-center gap-2">
-                             <span class="text-xs text-gray-400 font-medium">Date Range:</span>
-                             <input type="date" id="calendarStartDate" class="input input-bordered input-sm rounded-lg w-36"/>
-                             <span class="text-gray-400">→</span>
-                             <input type="date" id="calendarEndDate" class="input input-bordered input-sm rounded-lg w-36"/>
-                             <button onclick="generateEventCalendar()" class="btn btn-primary btn-sm rounded-lg gap-1">
-                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                 Generate
-                             </button>
+                         
+                         <!-- Date Range Controls - Responsive -->
+                         <div class="flex flex-col sm:flex-row gap-3 p-4 bg-base-200 rounded-xl">
+                             <div class="flex-1">
+                                 <label class="label py-1"><span class="label-text text-xs font-semibold opacity-60">From</span></label>
+                                 <input type="date" id="calendarStartDate" class="input input-bordered input-sm w-full rounded-lg"/>
+                             </div>
+                             <div class="flex-1">
+                                 <label class="label py-1"><span class="label-text text-xs font-semibold opacity-60">To</span></label>
+                                 <input type="date" id="calendarEndDate" class="input input-bordered input-sm w-full rounded-lg"/>
+                             </div>
+                             <div class="flex items-end">
+                                 <button onclick="generateEventCalendar()" class="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto rounded-lg gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                     Generate
+                                 </button>
+                             </div>
                          </div>
                      </div>
                      
@@ -753,12 +761,12 @@
                          </div>
                      </div>
                      
-                     <!-- Probability Legend -->
-                     <div class="flex items-center gap-4 mb-4 px-2">
-                         <span class="text-xs font-bold text-gray-400">Probability:</span>
-                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-high"></div><span class="text-xs text-gray-500">High (70-100%)</span></div>
-                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-medium"></div><span class="text-xs text-gray-500">Medium (40-69%)</span></div>
-                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-low"></div><span class="text-xs text-gray-500">Low (1-39%)</span></div>
+                     <!-- Probability Legend - Wrapping -->
+                     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 px-2">
+                         <span class="text-xs font-bold text-gray-400 w-full sm:w-auto">Probability:</span>
+                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-high"></div><span class="text-xs text-gray-500">High</span></div>
+                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-medium"></div><span class="text-xs text-gray-500">Medium</span></div>
+                         <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-low"></div><span class="text-xs text-gray-500">Low</span></div>
                          <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-very-low border"></div><span class="text-xs text-gray-500">None</span></div>
                      </div>
                      
