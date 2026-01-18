@@ -795,9 +795,9 @@
                      </div>
                      
                      <!-- Current Dasha Display -->
-                     <div class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100" id="current-dasha-display">
+                     <div class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100 overflow-x-auto" id="current-dasha-display">
                         <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Current Running Dasha</div>
-                        <div class="flex flex-wrap gap-3" id="current-dasha-lords">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="current-dasha-lords">
                             <!-- Will be populated dynamically -->
                         </div>
                     </div>
@@ -2090,9 +2090,8 @@
             backdrop.classList.remove('hidden');
         }
         
-        window.closeDayModal = (event) => {
-            if (event && event.target !== document.getElementById('day-modal-backdrop')) return;
-            document.getElementById('day-modal-backdrop').classList.remove('active');
+        window.closeDayModal = () => {
+            document.getElementById('day-modal-backdrop').classList.add('hidden');
         };
 
         // Initialize theme on page load
