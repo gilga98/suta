@@ -35,6 +35,47 @@ const PLANET_LORDS = {
     "Sagittarius": "Jupiter", "Capricorn": "Saturn", "Aquarius": "Saturn", "Pisces": "Jupiter"
 };
 
+// --- KP SUB DIVISION SYSTEM ---
+/**
+ * KP Sub divisions follow the same Vimshottari proportional distribution
+ * Each 13°20' nakshatra is divided into 9 subs in Vimshottari proportion
+ * The sub lords follow the same sequence as the nakshatra lord's position in VIM order
+ */
+
+// Calculate sub divisions for a nakshatra
+// Each nakshatra (13.333333°) is divided proportionally by dasha years
+function getSubDivisions(nakshatraLord) {
+    const totalDegrees = 13.3333333; // 13°20'
+    const startIndex = VIM_ORDER.indexOf(nakshatraLord);
+    const subdivisions = [];
+    let currentDegree = 0;
+    
+    for (let i = 0; i < 9; i++) {
+        const lordIndex = (startIndex + i) % 9;
+        const lord = VIM_ORDER[lordIndex];
+        const proportion = DASHA_YEARS[lord] / TOTAL_DASHA_YEARS;
+        const degrees = totalDegrees * proportion;
+        
+        subdivisions.push({
+            lord: lord,
+            startDegree: currentDegree,
+            endDegree: currentDegree + degrees,
+            span: degrees
+        });
+        
+        currentDegree += degrees;
+    }
+    
+    return subdivisions;
+}
+
+// Pre-calculate all sub divisions for all 27 nakshatras
+const KP_SUB_DIVISIONS = {};
+NAKSHATRA_LORDS.forEach((lord, nakIndex) => {
+    KP_SUB_DIVISIONS[nakIndex] = getSubDivisions(lord);
+});
+
+
 // --- EVENT TYPE DEFINITIONS ---
 // Houses are 1-indexed as per KP convention
 
@@ -258,38 +299,85 @@ class KPEventEngine {
             this.significatorLevels[p] = { level1: [], level2: [], level3: [], level4: [] };
         });
         
-        // Get Ascendant for house calculation
-        const asc = natalPlanets.find(p => p.name === "Ascendant");
-        if (!asc) return;
-        const ascSignId = asc.signId;
+        // Get cusp longitudes for bhava calculation (KP uses cusp-based houses!)
+        // natalKPCusps should be array of 12 cusp longitudes
+        const cuspLongitudes = natalKPCusps || [];
         
-        // Helper: Calculate house number from sign ID
-        const getHouseNum = (signId) => {
-            return ((signId - ascSignId + 12) % 12) + 1;
+        // Helper: Calculate bhava (house) number from longitude using cusps
+        // KP uses CUSP-BASED BHAVAS, not equal sign-based houses!
+        const getBhavaNum = (longitude) => {
+            if (cuspLongitudes.length !== 12) {
+                // Fallback to sign-based if cusps not provided
+                const asc = natalPlanets.find(p => p.name === "Ascendant");
+                if (!asc) return 1;
+                const ascSignId = asc.signId;
+                const planetSign = Math.floor(longitude / 30);
+                return ((planetSign - ascSignId + 12) % 12) + 1;
+            }
+            
+            // Find which bhava this longitude falls in (between cusp N and cusp N+1)
+            for (let i = 0; i < 12; i++) {
+                const cuspStart = cuspLongitudes[i];
+                const cuspEnd = cuspLongitudes[(i + 1) % 12];
+                
+                // Handle zodiac wraparound
+                if (cuspStart < cuspEnd) {
+                    if (longitude >= cuspStart && longitude < cuspEnd) {
+                        return i + 1;
+                    }
+                } else {
+                    // Wraparound case (e.g., cusp at 350° to cusp at 20°)
+                    if (longitude >= cuspStart || longitude < cuspEnd) {
+                        return i + 1;
+                    }
+                }
+            }
+            return 1; // Fallback
         };
         
-        // Build planet occupancy map (which house each planet is in)
+        // Build planet occupancy map using BHAVA (cusp-based houses)
         const planetOccupancy = {};
         natalPlanets.forEach(planet => {
             if (planet.name === "Ascendant") return;
-            planetOccupancy[planet.name] = getHouseNum(planet.signId);
+            planetOccupancy[planet.name] = getBhavaNum(planet.longitude);
         });
         
         // Build planet ownership map (which houses each planet rules)
+        // In KP, ownership is based on which SIGNS appear on CUSPS, not equal houses!
         const planetOwnership = {};
         const rashis = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", 
                        "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
         
         planetNames.forEach(p => planetOwnership[p] = []);
         
-        for (let i = 0; i < 12; i++) {
-            const signId = (ascSignId + i) % 12;
-            const signName = rashis[signId];
-            const lord = PLANET_LORDS[signName];
-            const houseNum = i + 1;
+        if (cuspLongitudes.length === 12) {
+            // Use cusp-based ownership: Find which sign is on each cusp
+            for (let i = 0; i < 12; i++) {
+                const cuspLongitude = cuspLongitudes[i];
+                const signId = Math.floor(cuspLongitude / 30);
+                const signName = rashis[signId];
+                const lord = PLANET_LORDS[signName];
+                const houseNum = i + 1;
+                
+                if (planetOwnership[lord] && !planetOwnership[lord].includes(houseNum)) {
+                    planetOwnership[lord].push(houseNum);
+                }
+            }
+        } else {
+            // Fallback to ascendant-based if cusps not provided
+            const asc = natalPlanets.find(p => p.name === "Ascendant");
+            if (!asc) return;
+            const ascSignId = asc.signId;
             
-            if (planetOwnership[lord]) {
-                planetOwnership[lord].push(houseNum);
+            for (let i = 0; i < 12; i++) {
+                const signId = (ascSignId + i) % 12;
+                const signName = rashis[signId];
+                const lord = PLANET_LORDS[signName];
+                const houseNum = i + 1;
+                
+                if (planetOwnership[lord]) {
+                    planetOwnership[lord].push(houseNum);
+                }
             }
         }
         
@@ -401,6 +489,140 @@ class KPEventEngine {
         if (levels.level4.includes(house)) return 4;
         
         return 0; // Not a significator
+    }
+    
+    /**
+     * Calculate Sub-Lord for a given longitude (KP Standard)
+     * The sub-lord is determined by the proportional subdivision of the nakshatra
+     * 
+     * @param {number} longitude - Sidereal longitude in degrees (0-360)
+     * @returns {object} {subLord, nakshatra, nakshatraLord, degreeInNak, subStart, subEnd}
+     */
+    calculateSubLord(longitude) {
+        // Normalize longitude to 0-360
+        const normLong = ((longitude % 360) + 360) % 360;
+        
+        // Find nakshatra (0-26)
+        const nakshatraIndex = Math.floor(normLong / 13.3333333);
+        const nakshatraLord = NAKSHATRA_LORDS[nakshatraIndex];
+        
+        // Degree within nakshatra (0-13.333...)
+        const degreeInNakshatra = normLong % 13.3333333;
+        
+        // Get sub divisions for this nakshatra
+        const subDivisions = KP_SUB_DIVISIONS[nakshatraIndex];
+        
+        // Find which sub this degree falls in
+        let subLord = null;
+        let subStart = 0;
+        let subEnd = 0;
+        
+        for (const sub of subDivisions) {
+            if (degreeInNakshatra >= sub.startDegree && degreeInNakshatra < sub.endDegree) {
+                subLord = sub.lord;
+                subStart = sub.startDegree;
+                subEnd = sub.endDegree;
+                break;
+            }
+        }
+        
+        // Fallback to last sub if exactly at end (rare edge case)
+        if (!subLord) {
+            const lastSub = subDivisions[subDivisions.length - 1];
+            subLord = lastSub.lord;
+            subStart = lastSub.startDegree;
+            subEnd = lastSub.endDegree;
+        }
+        
+        return {
+            subLord,
+            nakshatra: nakshatraIndex + 1, // 1-27
+            nakshatraLord,
+            degreeInNak: degreeInNakshatra,
+            subStart,
+            subEnd,
+            longitude: normLong
+        };
+    }
+    
+    /**
+     * Check if an event is promised in the chart using Cuspal Sub-Lord Method (KP Standard)
+     * 
+     * Per KP rules:
+     * 1. If cuspal sub-lord signifies the event's house group → Event is PROMISED
+     * 2. If cuspal sub-lord signifies detrimental houses only → Event is DENIED  
+     * 3. If both → Event will happen but with obstacles
+     * 
+     * @param {object} eventType - Event type from EVENT_TYPES
+     * @param {Array} cusps - Array of cusp longitudes [cusp1Long, cusp2Long, ...]
+     * @returns {object} {promised, strength, reason, subLord, significations}
+     */
+    checkEventPromise(eventType, cusps) {
+        // Get primary house for this event (first in the house group)
+        const primaryHouse = eventType.houses[0];
+        const cuspLongitude = cusps[primaryHouse - 1]; // 0-indexed
+        
+        // Calculate sub-lord of the cusp
+        const subLordData = this.calculateSubLord(cuspLongitude);
+        const subLord = subLordData.subLord;
+        
+        // Get significations of the sub-lord
+        const subLordSigs = this.houseSignificators[subLord] || new Set();
+        
+        // Required houses for this event
+        const requiredHouses = new Set(eventType.houses);
+        
+        // Detrimental houses (12th from required houses)
+        const detrimentalHouses = new Set();
+        eventType.houses.forEach(h => {
+            const detrimental = (h % 12) + 1; // 12th from house
+            detrimentalHouses.add(detrimental);
+        });
+        
+        // Check what the sub-lord signifies
+        const signifiesRequired = Array.from(requiredHouses).filter(h => subLordSigs.has(h));
+        const signifiesDetrimental = Array.from(detrimentalHouses).filter(h => subLordSigs.has(h));
+        
+        let promised = false;
+        let strength = 0;
+        let reason = "";
+        
+        if (signifiesRequired.length > 0 && signifiesDetrimental.length === 0) {
+            // Pure promise
+            promised = true;
+            strength = (signifiesRequired.length / requiredHouses.size) * 100;
+            reason = `Sub-lord ${subLord} signifies favorable houses ${signifiesRequired.join(', ')}`;
+        } else if (signifiesDetrimental.length > 0 && signifiesRequired.length === 0) {
+            // Denied
+            promised = false;
+            strength = 0;
+            reason = `Sub-lord ${subLord} signifies only detrimental houses ${signifiesDetrimental.join(', ')}`;
+        } else if (signifiesRequired.length > 0 && signifiesDetrimental.length > 0) {
+            // Mixed - event happens with obstacles
+            promised = true;
+            strength = (signifiesRequired.length / requiredHouses.size) * 60; // Reduced strength
+            reason = `Sub-lord ${subLord} signifies both favorable and detrimental houses - obstacles expected`;
+        } else {
+            // Sub-lord doesn't signify relevant houses
+            promised = false;
+            strength = 0;
+            reason = `Sub-lord ${subLord} doesn't signify event-related houses`;
+        }
+        
+        return {
+            promised,
+            strength: Math.round(strength),
+            reason,
+            subLord,
+            subLordData,
+            primaryHouse,
+            cuspLongitude,
+            significations: {
+                required: signifiesRequired,
+                detrimental: signifiesDetrimental,
+                all: Array.from(subLordSigs)
+            }
+        };
     }
 
     // --- EVENT PROBABILITY CALCULATION ---
