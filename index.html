@@ -879,6 +879,27 @@
                                         <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">6</span> <span class="badge badge-sm badge-neutral">7</span> <span class="badge badge-sm badge-neutral">12</span></div>
                                         <div class="text-xs opacity-60 mt-1">6=Arguments, 12=Punishment</div>
                                     </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>🚗</span> Short Travel
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">3</span> <span class="badge badge-sm badge-neutral">9</span></div>
+                                        <div class="text-xs opacity-60 mt-1">3=Short journeys, 9=Travel</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>⚠️</span> Obstacles / Losses
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">6</span> <span class="badge badge-sm badge-neutral">8</span> <span class="badge badge-sm badge-neutral">12</span></div>
+                                        <div class="text-xs opacity-60 mt-1">Dusthana houses (malefic triad)</div>
+                                    </div>
+                                    <div class="p-3 bg-base-200 rounded-lg">
+                                        <div class="flex items-center gap-2 font-bold mb-1">
+                                            <span>🕉️</span> Spiritual Progress
+                                        </div>
+                                        <div class="text-xs">Houses: <span class="badge badge-sm badge-neutral">5</span> <span class="badge badge-sm badge-neutral">9</span> <span class="badge badge-sm badge-neutral">12</span></div>
+                                        <div class="text-xs opacity-60 mt-1">5=Merit, 9=Dharma, 12=Moksha</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1885,6 +1906,9 @@
             // Build house significators from natal data
             kpEventEngine.buildHouseSignificators(calendarNatalData.planets, calendarNatalData.kpCusps);
             
+            // Expose to window for modal to access
+            window.currentHouseSignificators = kpEventEngine.houseSignificators;
+            
             // Generate calendar
             calendarData = kpEventEngine.generateCalendar(
                 calendarMoonLong,
@@ -2069,19 +2093,24 @@
                         
                         <div class="text-sm opacity-80 mb-2 font-semibold">Contributing Factors (Why?):</div>
                         <div class="space-y-2">
-                            ${e.contributors && e.contributors.length > 0 ? e.contributors.map(c => `
+                            ${e.contributors && e.contributors.length > 0 ? e.contributors.map(c => {
+                                // Get planet significations for display
+                                const planetSig = (c.level !== 'bonus' && c.level !== 'transit' && window.currentHouseSignificators && window.currentHouseSignificators[c.lord]) 
+                                    ? Array.from(window.currentHouseSignificators[c.lord]).sort((a,b) => a-b).join(', ')
+                                    : '';
+                                return `
                                 <div class="contributor-item flex justify-between items-center">
                                     <div>
                                         <div class="contributor-level">${c.level === 'bonus' ? '✨ Synergy Bonus' : (c.level === 'transit' ? '🪐 Transit Trigger' : c.level)}</div>
                                         <div class="text-xs opacity-70">
                                             ${c.level === 'bonus' 
                                                 ? 'All dasha lords signify event houses' 
-                                                : `${c.lord} signifies houses ${c.matched.join(', ')}`}
+                                                : `<strong>${c.lord}</strong>${planetSig ? ` <span class="badge badge-xs badge-outline">${planetSig}</span>` : ''} → houses ${c.matched.join(', ')}`}
                                         </div>
                                     </div>
                                     <div class="font-mono font-bold text-success">+${c.points}%</div>
                                 </div>
-                            `).join('') : '<div class="text-xs opacity-50 italic">No direct significators found.</div>'}
+                            `}).join('') : '<div class="text-xs opacity-50 italic">No direct significators found.</div>'}
                         </div>
                     </div>
                 `).join('');
