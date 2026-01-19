@@ -1094,7 +1094,8 @@
                     calendarMoonLong = moonObj.longitude;
                     calendarNatalData = {
                         planets: d1Result.planets,
-                        kpCusps: kpData.cusps
+                        kpCusps: kpData.cusps,
+                        cuspLongitudes: kpResult.houses.houses.slice(1) // Extract raw longitudes (skip index 0)
                     };
                     
                     // Set default calendar date range (today + 90 days)
@@ -1904,7 +1905,7 @@
             const days = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1;
             
             // Build house significators from natal data
-            kpEventEngine.buildHouseSignificators(calendarNatalData.planets, calendarNatalData.kpCusps);
+            kpEventEngine.buildHouseSignificators(calendarNatalData.planets, calendarNatalData.cuspLongitudes);
             
             // Expose to window for modal to access
             window.currentHouseSignificators = kpEventEngine.houseSignificators;
@@ -1914,7 +1915,7 @@
                 calendarMoonLong,
                 calendarBirthDate,
                 calendarNatalData.planets,
-                calendarNatalData.kpCusps,
+                calendarNatalData.cuspLongitudes,
                 startDate,
                 Math.min(days, 365), // Cap at 1 year
                 null // All event types for data, filter in render
