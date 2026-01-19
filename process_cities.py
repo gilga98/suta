@@ -49,6 +49,14 @@ with open('raw_world_cities.json', 'r') as f:
 
 final_list = []
 
+# Manual Additions for missing cities
+MANUAL_ADDITIONS = [
+    { "name": "Dharwad", "lat": "15.4589", "lng": "75.0078", "admin1": "19", "country": "IN" },
+    { "name": "Hubballi", "lat": "15.3647", "lng": "75.1240", "admin1": "19", "country": "IN" },
+    { "name": "Rishikesh", "lat": "30.0869", "lng": "78.2676", "admin1": "39", "country": "IN" }
+]
+raw_data.extend(MANUAL_ADDITIONS)
+
 for c in raw_data:
     if c['country'] != 'IN': continue
     

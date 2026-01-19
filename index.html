@@ -17,6 +17,8 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <!-- Pako (GZIP Decompression) -->
     <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    <!-- D3.js for Interactive Charts -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -168,12 +170,9 @@
         
         /* Mobile tab content: hidden by default on mobile, always visible on desktop */
         @media (max-width: 1023px) {
-            .mobile-tab-content { display: none !important; }
-            .mobile-tab-content.active { display: block !important; }
+            .mobile-tab-content:not(.active) { display: none !important; }
         }
-        @media (min-width: 1024px) {
-            .mobile-tab-content { display: block !important; }
-        }
+        /* No desktop rule needed - let default styles/Tailwind classes apply */
         
         /* Dasha expansion arrow transition */
         .dasha-arrow { transition: transform 0.2s ease; }
@@ -354,6 +353,171 @@
         .day-modal { background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); transform: scale(0.9); transition: transform 0.2s ease; }
         .day-modal-backdrop.active .day-modal { transform: scale(1); }
         [data-theme="dark"] .day-modal { background: #1a1a2e; }
+        
+        /* ====== CHART STYLES ====== */
+        
+        /* Chart Container */
+        .chart-container-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+        }
+        
+        [data-theme="dark"] .chart-container-wrapper {
+            background: #1a1a2e;
+        }
+        
+        /* Timeframe Selector Buttons */
+        .timeframe-selector {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        
+        .timeframe-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .timeframe-btn:hover {
+            border-color: #ff385c;
+            transform: translateY(-1px);
+        }
+        
+        .timeframe-btn.active {
+            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%);
+            border-color: #ff385c;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 56, 92, 0.3);
+        }
+        
+        [data-theme="dark"] .timeframe-btn {
+            background: #16162a;
+            border-color: #3d3d55;
+            color: #e5e7eb;
+        }
+        
+        [data-theme="dark"] .timeframe-btn:hover {
+            border-color: #ff6b8a;
+        }
+        
+        [data-theme="dark"] .timeframe-btn.active {
+            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%);
+            color: white;
+        }
+        
+        /* Chart Event Type Toggles */
+        .chart-event-toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--color-base-200);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .chart-event-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            background: white;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        
+        .chart-event-toggle:hover {
+            border-color: #ff385c;
+        }
+        
+        .chart-event-toggle.inactive {
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+        
+        [data-theme="dark"] .chart-event-toggle {
+            background: #16162a;
+            color: #e5e7eb;
+        }
+        
+        .chart-event-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        
+        /* Chart View Toggle Tabs */
+        .chart-calendar-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .chart-tab {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .chart-tab:hover {
+            border-color: #ff385c;
+        }
+        
+        .chart-tab.active {
+            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%);
+            border-color: #ff385c;
+            color: white;
+        }
+        
+        [data-theme="dark"] .chart-tab {
+            background: #16162a;
+            border-color: #3d3d55;
+            color: #e5e7eb;
+        }
+        
+        [data-theme="dark"] .chart-tab.active {
+            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%);
+            color: white;
+        }
+        
+        /* Chart/Calendar Content Containers */
+        .chart-view-content,
+        .calendar-view-content {
+            display: none;
+        }
+        
+        .chart-view-content.active,
+        .calendar-view-content.active {
+            display: block;
+        }
+        
+        /* Responsive chart height */
+        @media (max-width: 640px) {
+            .chart-container-wrapper {
+                height: 300px;
+            }
+        }
     </style>
 </head>
 <body class="text-secondary antialiased min-h-screen flex flex-col">
@@ -499,10 +663,10 @@
              <!-- DASHBOARD GRID -->
              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                  
-                 <!-- LEFT COLUMN: CHARTS (Sticky on Desktop) -->
-                 <div class="lg:col-span-4 flex flex-col gap-6">
-                     <!-- CHART CARD (mobile-tab-content) -->
-                     <div id="mobile-content-chart" class="mobile-tab-content active card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-4 lg:sticky lg:top-24">
+                <!-- LEFT COLUMN: CHARTS (Sticky on Desktop) -->
+                <div class="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-24 self-start">
+                    <!-- CHART CARD (mobile-tab-content) -->
+                    <div id="mobile-content-chart" class="mobile-tab-content active card bg-base-100 shadow-lg rounded-2xl border border-gray-100 p-4">
                          <div role="tablist" class="tabs tabs-boxed bg-gray-100 p-1 rounded-xl mb-4">
                              <a role="tab" class="tab tab-active rounded-lg transition-all" onclick="switchChartTab('d1', this)">Rashi (D1)</a>
                              <a role="tab" class="tab rounded-lg transition-all" onclick="switchChartTab('d9', this)">Navamsa</a>
@@ -544,7 +708,7 @@
                              </div>
                          </div>
                      </div>
-                     </div>
+
                      
                      <!-- PANCHANGA CARD (mobile-tab-content) -->
                      <div id="mobile-content-panchang" class="mobile-tab-content">
@@ -734,23 +898,10 @@
                              <p class="text-gray-500 text-sm mt-1">KP System Analysis with Deep Dasha (Pratyantar → Sookshma)</p>
                          </div>
                          
-                         <!-- Date Range Controls - Responsive -->
-                         <div class="flex flex-col sm:flex-row gap-3 p-4 bg-base-200 rounded-xl">
-                             <div class="flex-1">
-                                 <label class="label py-1"><span class="label-text text-xs font-semibold opacity-60">From</span></label>
-                                 <input type="date" id="calendarStartDate" class="input input-bordered input-sm w-full rounded-lg"/>
-                             </div>
-                             <div class="flex-1">
-                                 <label class="label py-1"><span class="label-text text-xs font-semibold opacity-60">To</span></label>
-                                 <input type="date" id="calendarEndDate" class="input input-bordered input-sm w-full rounded-lg"/>
-                             </div>
-                             <div class="flex items-end">
-                                 <button onclick="generateEventCalendar()" class="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto rounded-lg gap-2">
-                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                     Generate
-                                 </button>
-                             </div>
-                         </div>
+                        <!-- Date Range Controls Removed (Auto-generated) -->
+                        <div class="hidden">
+                            <!-- Inputs removed for redesign -->
+                        </div>
                      </div>
                      
                      <!-- Event Type Pills (Search/Filter) -->
@@ -761,6 +912,47 @@
                          </div>
                      </div>
                      
+                     <!-- Chart/Calendar View Toggle -->
+                     <div class="chart-calendar-tabs">
+                         <button class="chart-tab active" onclick="switchCalendarView('chart')">
+                             📊 Chart View
+                         </button>
+                         <button class="chart-tab" onclick="switchCalendarView('calendar')">
+                             📅 Calendar View
+                         </button>
+                     </div>
+                     
+                     <!-- CHART VIEW CONTENT -->
+                     <div class="chart-view-content active" id="chart-view">
+                         
+                         <!-- Timeframe Selector -->
+                         <div class="timeframe-selector">
+                             <button class="timeframe-btn" onclick="setChartTimeframe('1W')">1W</button>
+                             <button class="timeframe-btn" onclick="setChartTimeframe('1M')">1M</button>
+                             <button class="timeframe-btn active" onclick="setChartTimeframe('3M')">3M</button>
+                             <button class="timeframe-btn" onclick="setChartTimeframe('6M')">6M</button>
+                             <button class="timeframe-btn" onclick="setChartTimeframe('1Y')">1Y</button>
+                             <button class="timeframe-btn" onclick="setChartTimeframe('ALL')">ALL</button>
+                             <button class="btn btn-sm btn-outline rounded-lg ml-auto" onclick="resetChartZoom()">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                 Reset Zoom
+                             </button>
+                         </div>
+                        
+                         <!-- Chart Container -->
+                         <div class="chart-container-wrapper" id="d3-chart-wrapper">
+                             <svg id="eventProbabilityChart"></svg>
+                         </div>
+                         
+                         <!-- Chart Help Text -->
+                         <div class="text-xs text-gray-500 mt-4 px-2">
+                             <strong>💡 Tip:</strong> Use mouse wheel to zoom, click-drag to pan timeline, or click any point to see that day's details.
+                         </div>
+                     </div>
+                     
+                     <!-- CALENDAR VIEW CONTENT -->
+                     <div class="calendar-view-content" id="calendar-view">
+                     
                      <!-- Probability Legend - Wrapping -->
                      <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 px-2">
                          <span class="text-xs font-bold text-gray-400 w-full sm:w-auto">Probability:</span>
@@ -770,6 +962,7 @@
                          <div class="flex items-center gap-1"><div class="w-4 h-4 rounded prob-very-low border"></div><span class="text-xs text-gray-500">None</span></div>
                      </div>
                      
+
                      <!-- Month Navigation -->
                      <div class="month-nav mb-4 px-2">
                          <button onclick="changeCalendarMonth(-1)" class="btn btn-ghost btn-sm btn-circle">
@@ -904,6 +1097,8 @@
                             </div>
                         </div>
                     </div>
+                     
+                     </div> <!-- End calendar-view-content -->
                      
                  </div>
              </div>
@@ -1100,12 +1295,18 @@
                     
                     // Set default calendar date range (today + 90 days)
                     const today = new Date();
-                    document.getElementById('calendarStartDate').value = today.toISOString().split('T')[0];
-                    const endDate = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
-                    document.getElementById('calendarEndDate').value = endDate.toISOString().split('T')[0];
+                    // Calendar date input initialization removed
+                    // Calendar date input initialization removed
+                    // const endDate = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+                    // document.getElementById('calendarEndDate').value = endDate.toISOString().split('T')[0];
                     
                     // Initialize event pills
                     initEventPills();
+                    
+                    // Auto-generate calendar with default 10-year range
+                    setTimeout(() => {
+                        generateEventCalendar();
+                    }, 500);
                     
                     // Calculate and render current running dasha immediately
                     const currentDasha = kpEventEngine.calculateDeepDasha(
@@ -1848,6 +2049,11 @@
                     moonIcon.classList.add('hidden');
                 }
             }
+            
+            // Update chart colors if chart exists
+            if (typeof updateChartTheme === 'function') {
+                updateChartTheme();
+            }
         }
         
         window.toggleTheme = () => {
@@ -1884,9 +2090,13 @@
             // Update visual
             const pill = document.querySelector(`[data-event-id="${eventId}"]`);
             if (pill) pill.classList.toggle('active');
-            // Re-render calendar if data exists
+            // Re-render calendar AND chart if data exists (global sync)
             if (calendarData.length > 0) {
                 renderCalendarMonth();
+                // Also update chart if it's initialized
+                if (d3Chart.svg) {
+                    renderD3Chart(currentChartTimeframe);
+                }
             }
         };
         
@@ -1896,11 +2106,13 @@
                 return;
             }
             
-            const startDateEl = document.getElementById('calendarStartDate');
-            const endDateEl = document.getElementById('calendarEndDate');
+            // Auto-calculate range: 5 years back to 5 years forward (Total 10 years)
+            const today = new Date();
+            const startDate = new Date(today);
+            startDate.setFullYear(today.getFullYear() - 5);
             
-            const startDate = startDateEl.value ? new Date(startDateEl.value) : new Date();
-            const endDate = endDateEl.value ? new Date(endDateEl.value) : new Date(startDate.getTime() + 90 * 24 * 60 * 60 * 1000);
+            const endDate = new Date(today);
+            endDate.setFullYear(today.getFullYear() + 5);
             
             const days = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1;
             
@@ -1917,7 +2129,7 @@
                 calendarNatalData.planets,
                 calendarNatalData.cuspLongitudes,
                 startDate,
-                Math.min(days, 365), // Cap at 1 year
+                Math.min(days, 4000), // Cap at ~11 years for safety
                 null // All event types for data, filter in render
             );
             
@@ -1929,7 +2141,651 @@
             if (todayData) {
                 renderCurrentDasha(todayData.dasha);
             }
+            
+            // Initialize chart immediately if container is visible (tab is active or not)
+            // Even if hidden, we try to init so it's ready
+            setTimeout(() => {
+                initializeD3Chart();
+                renderD3Chart(currentChartTimeframe);
+            }, 100);
         };
+        
+        // ===== D3.JS CHART INTEGRATION =====
+        
+        let d3Chart = {
+            svg: null,
+            xScale: null,
+            yScale: null,
+            xAxis: null,
+            yAxis: null,
+            zoom: null,
+            currentTransform: null
+        };
+        let currentChartTimeframe = '3M';
+        // Removed chartVisibleEvents - use activeEventTypes (GLOBAL SYNC)
+        
+        // Helper: Aggregate data for large timeframes
+        function aggregateDataByInterval(data, intervalDays) {
+            if (intervalDays <= 1) return data;
+            
+            const aggregated = [];
+            // Group by interval
+            for (let i = 0; i < data.length; i += intervalDays) {
+                const chunk = data.slice(i, i + intervalDays);
+                if (chunk.length === 0) continue;
+                
+                const avgDate = chunk[Math.floor(chunk.length / 2)].date; // Use middle date
+                
+                // Merge events
+                const eventsMap = new Map();
+                
+                chunk.forEach(day => {
+                    day.events.forEach(e => {
+                        if (!eventsMap.has(e.type)) {
+                            eventsMap.set(e.type, { ...e, score: 0, count: 0 });
+                        }
+                        const existing = eventsMap.get(e.type);
+                        existing.score += e.score;
+                        existing.count++;
+                    });
+                });
+                
+                const averagedEvents = Array.from(eventsMap.values()).map(e => ({
+                    ...e,
+                    score: Math.round(e.score / e.count)
+                }));
+                
+                aggregated.push({
+                    date: avgDate,
+                    events: averagedEvents,
+                    isAggregated: true,
+                    dateRange: `${chunk[0].date} to ${chunk[chunk.length-1].date}`
+                });
+            }
+            return aggregated;
+        }
+        
+        // Event type color mapping (consistent with event pills)
+        window.EVENT_COLORS = {
+            'marriage': '#ec4899',
+            'career': '#8b5cf6',
+            'finance': '#22c55e',
+            'education': '#f59e0b',
+            'property': '#06b6d4',
+            'children': '#f97316',
+            'health': '#dc2626',
+            'travel': '#14b8a6',
+            'legal': '#64748b',
+            'spiritual': '#a855f7'
+        };
+        
+        function initializeD3Chart() {
+            const container = document.getElementById('d3-chart-wrapper');
+            if (!container) {
+                console.warn('D3 chart container not found');
+                return;
+            }
+            
+            // Check if container is visible
+            const containerRect = container.getBoundingClientRect();
+            if (containerRect.width === 0 || containerRect.height === 0) {
+                console.warn('D3 chart container has zero dimensions, deferring initialization');
+                return;
+            }
+            
+            // Clear existing SVG
+            d3.select('#eventProbabilityChart').selectAll('*').remove();
+            
+            const isDark = document.documentElement.dataset.theme === 'dark';
+            const margin = {top: 20, right: 120, bottom: 60, left: 60};
+            
+            // Calculate dimensions with proper fallbacks
+            // FIX: Remove hardcoded min-width of 320px which caused overflow on small screens
+            // Use 100% of container width, but ensure it's at least something visible
+            const containerWidth = containerRect.width > 0 ? containerRect.width : 320; 
+            const containerHeight = Math.max(containerRect.height, 300);
+            
+            // Adjust margins for mobile
+            const isMobile = containerWidth < 600;
+            const effectiveMargin = {
+                top: margin.top, 
+                right: isMobile ? 20 : margin.right, 
+                bottom: margin.bottom, 
+                left: margin.left
+            };
+
+            const width = Math.max(containerWidth - effectiveMargin.left - effectiveMargin.right, 0); // Ensure non-negative
+            const height = Math.max(containerHeight - effectiveMargin.top - effectiveMargin.bottom, 150);
+            
+            // Create SVG
+            const svg = d3.select('#eventProbabilityChart')
+                .attr('width', containerWidth)
+                .attr('height', containerHeight)
+                .style('background', isDark ? '#1a1a2e' : 'white');
+            
+            // Create main group with margins
+            const g = svg.append('g')
+                .attr('transform', `translate(${effectiveMargin.left},${effectiveMargin.top})`);
+            
+            // Create scales
+            d3Chart.xScale = d3.scaleTime().range([0, width]);
+            d3Chart.yScale = d3.scaleLinear().domain([0, 100]).range([height, 0]);
+            
+            // Create axes
+            const gridColor = isDark ? '#3d3d55' : '#e5e7eb';
+            const textColor = isDark ? '#9ca3af' : '#6b7280';
+            
+            d3Chart.xAxis = d3.axisBottom(d3Chart.xScale)
+                .ticks(d3.timeDay.every(7))
+                .tickFormat(d3.timeFormat('%b %d'));
+            
+            d3Chart.yAxis = d3.axisLeft(d3Chart.yScale)
+                .ticks(10)
+                .tickFormat(d => d + '%');
+            
+            // Append X axis
+            g.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0,${height})`)
+                .style('color', textColor)
+                .call(d3Chart.xAxis);
+            
+            // Append Y axis
+            g.append('g')
+                .attr('class', 'y-axis')
+                .style('color', textColor)
+                .call(d3Chart.yAxis);
+            
+            // Add Y axis label
+            g.append('text')
+                .attr('class', 'y-axis-label')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -45)
+                .attr('x', -height / 2)
+                .attr('fill', textColor)
+                .attr('text-anchor', 'middle')
+                .style('font-size', '12px')
+                .text('Probability Score');
+            
+            // Add grid lines
+            g.append('g')
+                .attr('class', 'grid')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(d3Chart.xScale).tickSize(-height).tickFormat(''))
+                .style('stroke', gridColor)
+                .style('stroke-opacity', 0.3)
+                .style('stroke-dasharray', '2,2');
+            
+            g.append('g')
+                .attr('class', 'grid')
+                .call(d3.axisLeft(d3Chart.yScale).tickSize(-width).tickFormat(''))
+                .style('stroke', gridColor)
+                .style('stroke-opacity', 0.3)
+                .style('stroke-dasharray', '2,2');
+            
+            // Create clip path for zoom
+            svg.append('defs').append('clipPath')
+                .attr('id', 'clip')
+                .append('rect')
+                .attr('width', width)
+                .attr('height', height);
+            
+            // Add lines group with clip path
+            g.append('g')
+                .attr('class', 'lines-group')
+                .attr('clip-path', 'url(#clip)');
+            
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([1, 10])
+                .translateExtent([[0, 0], [width, height]])
+                .extent([[0, 0], [width, height]])
+                .on('zoom', (event) => {
+                    d3Chart.currentTransform = event.transform;
+                    
+                    // Update x scale
+                    const newXScale = event.transform.rescaleX(d3Chart.xScale);
+                    
+                    // Update x axis
+                    g.select('.x-axis').call(d3Chart.xAxis.scale(newXScale));
+                    
+                    // Update lines
+                    g.selectAll('.event-line')
+                        .attr('d', d => {
+                            const line = d3.line()
+                                .x(d => newXScale(d.date))
+                                .y(d => d3Chart.yScale(d.value))
+                                .curve(d3.curveMonotoneX);
+                            return line(d.data);
+                        });
+                    
+                    // Update points
+                    g.selectAll('.event-points circle')
+                        .attr('cx', d => newXScale(d.date));
+                });
+            
+            svg.call(zoom);
+            d3Chart.zoom = zoom;
+            d3Chart.svg = svg;
+
+            // --- WINDOW RESIZE LISTENER ---
+            // Remove existing listener if any to prevent duplicates (though anonymous funcs can't be removed easily, 
+            // the pattern here essentially re-inits logic. Ideally we'd name it. 
+            // For now, checks if we already attached one to avoid multiple in SPA, but here it's full reload.)
+            if (!window.chartResizeListenerAdded) {
+                let resizeTimer;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => {
+                        // Only redraw if chart container is visible
+                        const container = document.getElementById('d3-chart-wrapper');
+                        if(container && container.offsetParent !== null) {
+                            console.log("Resizing chart...");
+                            initializeD3Chart();
+                            renderD3Chart(currentChartTimeframe);
+                        }
+                    }, 250); // Debounce
+                });
+                window.chartResizeListenerAdded = true;
+            }
+        }
+        
+        function renderD3Chart(timeframe = currentChartTimeframe) {
+            if (!d3Chart.svg || !calendarData || calendarData.length === 0) return;
+            
+            currentChartTimeframe = timeframe;
+            
+            // Calculate date range based on timeframe
+            const fullEndDate = new Date(calendarData[calendarData.length - 1].date);
+            const fullStartDate = new Date(calendarData[0].date);
+            
+            // Reference Today
+            const today = new Date();
+            let startDate, endDate;
+            let aggregationInterval = 1;
+            
+            // Start from Today for specific timeframes, or Use full range for ALL
+            
+            switch (timeframe) {
+                case '1W':
+                    startDate = new Date(today);
+                    endDate = new Date(today);
+                    endDate.setDate(today.getDate() + 7);
+                    break;
+                case '1M':
+                    startDate = new Date(today);
+                    endDate = new Date(today);
+                    endDate.setDate(today.getDate() + 30);
+                    break;
+                case '-1M': // Past 1 Month
+                    endDate = new Date(today);
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - 30);
+                    break;
+                case '-1Y': // Past 1 Year
+                    endDate = new Date(today);
+                    startDate = new Date(today);
+                    startDate.setFullYear(today.getFullYear() - 1);
+                    aggregationInterval = 14;
+                    break;
+                case '3M':
+                    startDate = new Date(today);
+                    endDate = new Date(today);
+                    endDate.setDate(today.getDate() + 90);
+                    aggregationInterval = 7; 
+                    break;
+                case '6M':
+                    startDate = new Date(today);
+                    endDate = new Date(today);
+                    endDate.setDate(today.getDate() + 180);
+                    aggregationInterval = 7; 
+                    break;
+                case '1Y':
+                    startDate = new Date(today);
+                    endDate = new Date(today);
+                    endDate.setFullYear(today.getFullYear() + 1);
+                    aggregationInterval = 14; 
+                    break;
+                case 'ALL':
+                default:
+                    startDate = fullStartDate;
+                    endDate = fullEndDate;
+                    const diffMonths = (fullEndDate - fullStartDate) / (1000 * 60 * 60 * 24 * 30);
+                    if(diffMonths > 24) aggregationInterval = 30;
+                    else if(diffMonths > 12) aggregationInterval = 14; 
+                    else if(diffMonths > 3) aggregationInterval = 7;
+                    else aggregationInterval = 1;
+                    break;
+            }
+            
+            // Clamp is handled by the timeframe logic above
+            
+            // Filter and Aggregate
+            const filteredData = calendarData.filter(d => {
+                const date = new Date(d.date);
+                return date >= startDate && date <= endDate;
+            });
+            const processData = aggregateDataByInterval(filteredData, aggregationInterval);
+            
+            // Prepare Series
+            const activeSeries = EVENT_TYPES
+                .filter(et => activeEventTypes.has(et.id))
+                .map(eventType => {
+                    const data = processData.map(day => {
+                        const event = day.events.find(e => e.type === eventType.id);
+                        return {
+                            date: new Date(day.date),
+                            value: event ? event.score : 0,
+                            dateStr: day.date,
+                            isAggregated: day.isAggregated,
+                            dateRange: day.dateRange
+                        };
+                    });
+                    return {
+                        id: eventType.id,
+                        name: eventType.name,
+                        icon: eventType.icon,
+                        color: window.EVENT_COLORS[eventType.id] || '#64748b',
+                        data: data
+                    };
+                });
+            
+            // Update Domain
+            d3Chart.xScale.domain([startDate, endDate]);
+            
+            // Update Axes
+            const svg = d3Chart.svg;
+            const margin = {top: 20, right: 120, bottom: 60, left: 60};
+            
+            // Smart Ticks
+            const isMobile = window.innerWidth < 600;
+            if (timeframe === 'ALL') {
+                 d3Chart.xAxis.ticks(isMobile ? 3 : d3.timeYear.every(1)).tickFormat(d3.timeFormat('%Y'));
+            } else if (timeframe === '1Y' || timeframe === '-1Y') {
+                d3Chart.xAxis.ticks(isMobile ? 4 : d3.timeMonth.every(2)).tickFormat(d3.timeFormat('%b %Y'));
+            } else if (timeframe === '6M') {
+                d3Chart.xAxis.ticks(isMobile ? 4 : d3.timeMonth.every(1)).tickFormat(d3.timeFormat('%b'));
+            } else {
+                d3Chart.xAxis.ticks(isMobile ? 3 : d3.timeWeek.every(1)).tickFormat(d3.timeFormat('%b %d'));
+            }
+            
+            svg.select('.x-axis').call(d3Chart.xAxis);
+            svg.select('.y-axis').transition().duration(300).call(d3Chart.yAxis);
+            
+            // Draw Lines
+            const line = d3.line()
+                .x(d => d3Chart.xScale(d.date))
+                .y(d => d3Chart.yScale(d.value))
+                .curve(d3.curveMonotoneX);
+            
+            const linesGroup = svg.select('.lines-group');
+            
+            // Remove old points (we use crosshair now)
+            linesGroup.selectAll('.event-points').remove();
+            
+            const lines = linesGroup.selectAll('.event-line').data(activeSeries, d => d.id);
+            lines.exit().remove();
+            
+            lines.enter()
+                .append('path')
+                .attr('class', 'event-line')
+                .style('fill', 'none')
+                .style('stroke-width', 2.5)
+                .style('opacity', 0)
+                .merge(lines)
+                .transition().duration(300)
+                .style('stroke', d => d.color)
+                .style('opacity', 0.8)
+                .attr('d', d => line(d.data));
+            
+            // --- CROSSHAIR & INTERACTION ---
+            
+            // Overlay for mouse events
+            let overlay = svg.select('.interaction-overlay');
+            if (overlay.empty()) {
+                overlay = svg.append('rect')
+                    .attr('class', 'interaction-overlay')
+                    .attr('width', Number(svg.attr('width')) - margin.left - margin.right)
+                    .attr('height', Number(svg.attr('height')) - margin.top - margin.bottom)
+                    .attr('transform', `translate(${margin.left},${margin.top})`)
+                    .style('fill', 'none')
+                    .style('pointer-events', 'all');
+            }
+            
+            // Crosshair Line
+            let crosshair = svg.select('.crosshair-line');
+            if (crosshair.empty()) {
+                crosshair = svg.select('g').append('line')
+                    .attr('class', 'crosshair-line')
+                    .style('stroke', document.documentElement.dataset.theme === 'dark' ? '#eee' : '#333')
+                    .style('stroke-width', 1)
+                    .style('stroke-dasharray', '3,3')
+                    .style('opacity', 0)
+                    .attr('y1', 0)
+                    .attr('y2', Number(svg.attr('height')) - margin.top - margin.bottom);
+            }
+            
+            // Tooltip Container
+            const tooltip = d3.select('#d3-tooltip-container');
+            if (tooltip.empty()) {
+                d3.select('body').append('div')
+                    .attr('id', 'd3-tooltip-container')
+                    .style('position', 'absolute')
+                    .style('opacity', 0)
+                    .style('pointer-events', 'none')
+                    .style('z-index', 1000)
+                    .style('transition', 'opacity 0.1s');
+            }
+            
+            const bisectDate = d3.bisector(d => d.date).left;
+            
+            overlay
+                .on('mousemove', function(event) {
+                    if(activeSeries.length === 0) return;
+                    
+                    const mouseX = d3.pointer(event)[0];
+                    const x0 = d3Chart.xScale.invert(mouseX);
+                    
+                    // Find closest data point index from first series (all aligned)
+                    const series0 = activeSeries[0].data;
+                    const i = bisectDate(series0, x0, 1);
+                    const d0 = series0[i - 1];
+                    const d1 = series0[i];
+                    
+                    let d = d0;
+                    if (d1 && d0) {
+                        d = (x0 - d0.date > d1.date - x0) ? d1 : d0;
+                    } else if (d1) {
+                        d = d1;
+                    }
+                    
+                    if (!d) return;
+                    
+                    const xPos = d3Chart.xScale(d.date);
+                    
+                    // Move Crosshair
+                    crosshair
+                        .attr('x1', xPos)
+                        .attr('x2', xPos)
+                        .style('opacity', 0.5);
+                    
+                    // Build Unified Tooltip Content
+                    const isDark = document.documentElement.dataset.theme === 'dark';
+                    const dateDisplay = d.isAggregated ? d.dateRange : d.date.toLocaleDateString(undefined, {
+                        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
+                    });
+                    
+                    let html = `
+                        <div class="px-3 py-2 rounded-lg shadow-xl border ${isDark ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-200 text-gray-800'} text-xs">
+                            <div class="font-bold mb-2 pb-1 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}">${dateDisplay}</div>
+                            <div class="space-y-1">
+                    `;
+                    
+                    // Add row for each active series
+                    activeSeries.forEach(s => {
+                        // Find value for this series at this index (or closest)
+                        // Since all synced, use index logic or find
+                        // Ideally data is aligned.
+                        const pt = s.data.find(p => p.date.getTime() === d.date.getTime()) || { value: 0 };
+                        
+                        html += `
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full" style="background-color: ${s.color}"></span>
+                                    <span>${s.name}</span>
+                                </div>
+                                <span class="font-mono font-bold">${pt.value}%</span>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div>
+                        ${!d.isAggregated ? `<div class="mt-2 text-[10px] opacity-60 italic text-center">Click for details</div>` : ''}
+                    </div>`;
+                    
+                    const tip = d3.select('#d3-tooltip-container');
+                    tip.html(html)
+                        .style('left', (event.pageX + 15) + 'px')
+                        .style('top', (event.pageY + 15) + 'px')
+                        .style('opacity', 1);
+                        
+                })
+                .on('mouseout', function() {
+                    crosshair.style('opacity', 0);
+                    d3.select('#d3-tooltip-container').style('opacity', 0);
+                })
+                .on('click', function(event) {
+                    const mouseX = d3.pointer(event)[0];
+                    const x0 = d3Chart.xScale.invert(mouseX);
+                    const series0 = activeSeries[0].data;
+                    const i = bisectDate(series0, x0, 1);
+                    const d0 = series0[i - 1];
+                    const d1 = series0[i];
+                    let d = (d0 && d1) ? ((x0 - d0.date > d1.date - x0) ? d1 : d0) : (d0 || d1);
+                    if(d) handleChartDrillDown(d.dateStr);
+                });
+
+            // Update timeframe button states
+            document.querySelectorAll('.timeframe-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = Array.from(document.querySelectorAll('.timeframe-btn'))
+                .find(btn => btn.textContent.trim() === timeframe);
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+        
+        function hideTooltip() {
+             d3.select('#d3-tooltip-container').style('opacity', 0);
+        }
+        
+        window.populateChartEventToggles = function() {
+            const container = document.getElementById('chart-event-toggles');
+            if (!container) return;
+            
+            const eventTypes = EVENT_TYPES;
+            
+            // Initialize all events as visible
+            chartVisibleEvents.clear();
+            eventTypes.forEach(et => chartVisibleEvents.add(et.id));
+            
+            container.innerHTML = eventTypes.map(eventType => `
+                <div class="chart-event-toggle" data-event-id="${eventType.id}" onclick="window.toggleChartEventType('${eventType.id}')">
+                    <div class="chart-event-color" style="background: ${window.EVENT_COLORS[eventType.id] || '#64748b'}"></div>
+                    <span>${eventType.icon} ${eventType.name}</span>
+                </div>
+            `).join('');
+        };
+        
+        window.toggleChartEventType = function(eventId) {
+            if (chartVisibleEvents.has(eventId)) {
+                chartVisibleEvents.delete(eventId);
+            } else {
+                chartVisibleEvents.add(eventId);
+            }
+            
+            // Update toggle UI
+            const toggle = document.querySelector(`[data-event-id="${eventId}"]`);
+            if (toggle) {
+                toggle.classList.toggle('inactive');
+            }
+            
+            // Re-render chart
+            renderD3Chart(currentChartTimeframe);
+        };
+        
+        window.setChartTimeframe = function(timeframe) {
+            // Update global state immediately so re-render picks it up
+            currentChartTimeframe = timeframe;
+            
+            // Re-render chart with new timeframe
+            renderD3Chart(timeframe);
+            
+            // Update UI Active State
+            document.querySelectorAll('.timeframe-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = Array.from(document.querySelectorAll('.timeframe-btn'))
+                .find(btn => btn.textContent.trim() === timeframe);
+            if (activeBtn) activeBtn.classList.add('active');
+        };
+
+        
+        window.resetChartZoom = function() {
+            if (d3Chart.zoom && d3Chart.svg) {
+                d3Chart.svg.transition().duration(500).call(d3Chart.zoom.transform, d3.zoomIdentity);
+            }
+        };
+        
+        function handleChartDrillDown(dateStr) {
+            // Find the day data
+            const dayData = calendarData.find(d => d.date === dateStr);
+            if (!dayData) return;
+            
+            // Open the day modal (reuse existing modal logic)
+            const cell = document.querySelector(`[data-date="${dateStr}"]`);
+            if (cell) {
+                cell.click(); // Trigger existing modal logic
+            }
+        }
+        
+        // Switch between chart and calendar view
+        window.switchCalendarView = (view) => {
+            const chartView = document.getElementById('chart-view');
+            const calendarView = document.getElementById('calendar-view');
+            const tabs = document.querySelectorAll('.chart-tab');
+            
+            if (view === 'chart') {
+                chartView.classList.add('active');
+                calendarView.classList.remove('active');
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+                
+                // Initialize chart when switching to chart view (if not already initialized)
+                setTimeout(() => {
+                    if (!d3Chart.svg && calendarData && calendarData.length > 0) {
+                        initializeD3Chart();
+                        renderD3Chart(currentChartTimeframe);
+                    } else if (d3Chart.svg && calendarData && calendarData.length > 0) {
+                        // Re-render in case data changed
+                        renderD3Chart(currentChartTimeframe);
+                    }
+                }, 100); // Small delay to ensure container is rendered
+            } else {
+                chartView.classList.remove('active');
+                calendarView.classList.add('active');
+                tabs[0].classList.remove('active');
+                tabs[1].classList.add('active');
+            }
+        };
+        
+        // Update chart theme when theme toggles
+        function updateChartTheme() {
+            if (d3Chart.svg) {
+                initializeD3Chart();
+                if (calendarData && calendarData.length > 0) {
+                    renderD3Chart(currentChartTimeframe);
+                }
+            }
+        }
+        
         
         function renderCalendarMonth() {
             const grid = document.getElementById('calendar-grid');
