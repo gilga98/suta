@@ -1433,7 +1433,6 @@
         let calendarBirthDate = null;
         let currentCalendarMonth = new Date(); // Initialize directly
         let activeEventTypes = new Set(['marriage', 'career', 'finance', 'education']); // Default selections
-        let isUpdatingPicker = false;    // Flag to prevent recursive onchange events
 
         window.onload = async () => {
             try {
@@ -2478,7 +2477,6 @@
         };
 
         window.jumpToDate = (val) => {
-            if (isUpdatingPicker) return; // Prevent recursive calls
             if(!val) return;
             const targetDate = new Date(val + '-01'); // YYYY-MM
             if(isNaN(targetDate.getTime())) return;
@@ -2887,10 +2885,8 @@
             // Sync date picker value
             const pickerVal = `${year}-${String(month + 1).padStart(2, '0')}`;
             const picker = document.getElementById('calendar-jump-picker');
-            if(picker) {
-                isUpdatingPicker = true;
+            if(picker && picker.value !== pickerVal) {
                 picker.value = pickerVal;
-                isUpdatingPicker = false;
             }
             
             // Empty cells before first day
