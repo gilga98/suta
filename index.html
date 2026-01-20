@@ -93,12 +93,13 @@
         [data-theme="dark"] .divider:before, [data-theme="dark"] .divider:after { background-color: #2d2d44 !important; }
         
         /* Dark mode chart elements */
-        [data-theme="dark"] .chart-grid { background: #2d2d44; border-color: #3d3d55; }
-        [data-theme="dark"] .chart-cell { background: #1a1a2e; }
-        [data-theme="dark"] .chart-center { background: #0f0f1a; }
-        [data-theme="dark"] .rashi-label { color: #9ca3af; }
-        [data-theme="dark"] .house-label { color: #ff6b8a; }
-        [data-theme="dark"] .planet-glyph { background: rgba(0,0,0,0.6); }
+        [data-theme="dark"] .chart-grid { background: #2d2d44; border-color: #4a4a6a; box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.05); }
+        [data-theme="dark"] .chart-cell { background: #1a1a2e; border-color: #3d3d55; }
+        [data-theme="dark"] .chart-cell:hover { border-color: #ff6b8a; box-shadow: inset 0 0 12px rgba(255,107,138,0.2); }
+        [data-theme="dark"] .chart-center { background: linear-gradient(135deg, #0f0f1a 0%, #16162a 100%); border-color: #3d3d55; }
+        [data-theme="dark"] .rashi-label { color: #9ca3af; background: rgba(255,255,255,0.05); }
+        [data-theme="dark"] .house-label { color: #ff6b8a; background: rgba(255,107,138,0.15); }
+        [data-theme="dark"] .planet-glyph { background: rgba(0,0,0,0.6); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
         
         /* Dark mode legend */
         [data-theme="dark"] .legend-swatch { border-color: rgba(255,255,255,0.2) !important; }
@@ -111,12 +112,53 @@
         [data-theme="dark"] .rashi-jupiter { background: linear-gradient(135deg, #713f12 0%, #422006 100%); }
         [data-theme="dark"] .rashi-venus { background: linear-gradient(135deg, #581c87 0%, #3b0764 100%); }
         [data-theme="dark"] .rashi-saturn { background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); }
-        .chart-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 70px); gap: 0; border: 1px solid #e2e8f0; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; }
-        .chart-cell { background: white; position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; font-size: 0.70rem; padding: 2px; transition: all 0.2s; }
-        .chart-cell:hover { filter: brightness(0.95); }
-        .chart-center { grid-column: 2 / span 2; grid-row: 2 / span 2; background: #fdfdfd; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .planet-glyph { font-weight: 600; margin: 1px; padding: 2px 4px; border-radius: 4px; font-size: 0.7rem; background: rgba(255,255,255,0.85); }
-        .planet-Ascendant { color: #ff385c; background: rgba(255,241,242,0.95); }
+        /* ====== KUNDALI CHART STYLES (REDESIGNED) ====== */
+        .chart-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            grid-template-rows: repeat(4, 70px); 
+            gap: 0; 
+            border: 3px solid #374151; 
+            width: 100%; 
+            aspect-ratio: 1; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12), inset 0 0 0 1px rgba(255,255,255,0.1);
+        }
+        .chart-cell { 
+            background: white; 
+            position: relative; 
+            display: flex; 
+            flex-wrap: wrap; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 0.70rem; 
+            padding: 4px; 
+            transition: all 0.2s ease; 
+            border: 2px solid #d1d5db;
+            cursor: pointer;
+        }
+        .chart-cell:hover { 
+            filter: brightness(0.95); 
+            border-color: #ff385c;
+            box-shadow: inset 0 0 12px rgba(255,56,92,0.15);
+            z-index: 5;
+        }
+        .chart-center { 
+            grid-column: 2 / span 2; 
+            grid-row: 2 / span 2; 
+            background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center; 
+            border: 2px solid #e5e7eb;
+            cursor: default;
+        }
+        .chart-center:hover { border-color: #e5e7eb; box-shadow: none; }
+        .planet-glyph { font-weight: 600; margin: 2px; padding: 3px 6px; border-radius: 6px; font-size: 0.75rem; background: rgba(255,255,255,0.9); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .planet-Ascendant { color: #ff385c; background: rgba(255,241,242,0.95); font-weight: 700; }
         .planet-Sun { color: #f59e0b; } /* Bright Amber */
         .planet-Moon { color: #0ea5e9; } /* Sky Blue */
         .planet-Mars { color: #dc2626; } /* Red */
@@ -148,8 +190,31 @@
         .rashi-venus { background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); } /* Pink for Taurus, Libra */
         .rashi-saturn { background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%); } /* Blue tint for Capricorn, Aquarius */
         
-        .rashi-label { position: absolute; bottom: 1px; right: 3px; font-size: 7px; font-weight: 600; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.02em; }
-        .house-label { position: absolute; top: 1px; left: 3px; font-size: 8px; font-weight: 700; color: #ff385c; }
+        /* Enhanced Labels */
+        .rashi-label { 
+            position: absolute; 
+            bottom: 2px; 
+            right: 4px; 
+            font-size: 8px; 
+            font-weight: 600; 
+            opacity: 0.8; 
+            text-transform: uppercase; 
+            letter-spacing: 0.02em; 
+            background: rgba(0,0,0,0.05);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+        .house-label { 
+            position: absolute; 
+            top: 2px; 
+            left: 4px; 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: #ff385c; 
+            background: rgba(255,56,92,0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
         
         #loader { position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 50; display: flex; justify-content: center; align-items: center; }
         #loader.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
@@ -844,6 +909,18 @@
                              </div>
                          </div>
 
+                         <!-- Chart Stats -->
+                         <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                             <div class="p-2 bg-base-200 rounded-lg flex justify-between items-center cursor-help" title="Planets in Houses 1, 4, 7, 10 (Action & Power)">
+                                 <span class="opacity-70 font-semibold">Kendra</span>
+                                 <span class="font-bold badge badge-sm badge-neutral" id="stats-kendra">-</span>
+                             </div>
+                             <div class="p-2 bg-base-200 rounded-lg flex justify-between items-center cursor-help" title="Planets in Houses 1, 5, 9 (Dharma & Luck)">
+                                 <span class="opacity-70 font-semibold">Trikona</span>
+                                 <span class="font-bold badge badge-sm badge-neutral" id="stats-trikona">-</span>
+                             </div>
+                         </div>
+
                          <!-- Basic Vitals Below Chart -->
                          <div class="mt-4 flex justify-between items-center px-2">
                              <div class="text-center">
@@ -1315,6 +1392,26 @@
         </div>
     </div>
 
+    <!-- BHAVA (HOUSE) MODAL -->
+    <div id="bhava-modal-backdrop" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4" onclick="closeBhavaModal()">
+        <div class="modal-box w-full max-w-md bg-base-100 rounded-xl shadow-2xl relative" onclick="event.stopPropagation()">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="closeBhavaModal()">✕</button>
+            
+            <div class="text-center mb-6">
+                <h3 id="bhava-modal-title" class="font-bold text-xl text-gray-800">House Details</h3>
+                <p id="bhava-modal-subtitle" class="text-sm opacity-60">Significations</p>
+            </div>
+            
+            <div id="bhava-modal-content">
+                <!-- JS Injected -->
+            </div>
+            
+            <div class="modal-action justify-center mt-6">
+                <button class="btn btn-primary w-full" onclick="closeBhavaModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SCRIPTS -->
     <script type="module">
         import astroEngine from './VedicAstroEngine.js';
@@ -1709,6 +1806,21 @@
         }
 
         // Rashi data: [English Name, Sanskrit Abbrev, Lord]
+        const BHAVA_DATA = {
+            1: { name: "Lagna Bhava (1st House)", theme: "Self, Personality, Physique", significations: ["Physical body", "Appearance", "Character", "Health", "Vitality", "Beginnings", "General well-being", "Head/Brain"] },
+            2: { name: "Dhana Bhava (2nd House)", theme: "Wealth, Family, Speech", significations: ["Accumulated wealth", "Family", "Speech", "Food", "Right eye", "Early education", "Face", "Values"] },
+            3: { name: "Sahaja Bhava (3rd House)", theme: "Siblings, Courage, Effort", significations: ["Younger siblings", "Courage", "Communication", "Writing", "Short travels", "Hands/Shoulders", "Hobbies", "Willpower"] },
+            4: { name: "Matru Bhava (4th House)", theme: "Mother, Home, Happiness", significations: ["Mother", "Home/Property", "Vehicles", "Domestic happiness", "Primary education", "Heart/Chest", "Land", "Comforts"] },
+            5: { name: "Putra Bhava (5th House)", theme: "Children, Intellect, Creativity", significations: ["Children", "Intelligence", "Romance", "Speculation", "Past life merit", "Creativity", "Stomach", "Mantra/Prayer"] },
+            6: { name: "Ari Bhava (6th House)", theme: "Enemies, Disease, Debts", significations: ["Enemies/Rivals", "Diseases", "Debts", "Service/Work", "Litigation", "Accidents", "Intestines", "Maternal uncle"] },
+            7: { name: "Kalatra Bhava (7th House)", theme: "Spouse, Partnership, Business", significations: ["Spouse/Marriage", "Business partners", "Legal contracts", "Public image", "Sexual desires", "Kidneys/Lower back", "Foreign travel"] },
+            8: { name: "Randhra Bhava (8th House)", theme: "Longevity, Transformation", significations: ["Longevity", "Death/Rebirth", "Inheritance", "Occult/Mysticism", "Sudden events", "Reproductive organs", "Transformation"] },
+            9: { name: "Dharma Bhava (9th House)", theme: "Luck, Father, Religion", significations: ["Fortune/Luck", "Father/Guru", "Religion/Spirituality", "Higher education", "Long travels", "Thighs", "Dharma/Duty"] },
+            10: { name: "Karma Bhava (10th House)", theme: "Career, Status, Authority", significations: ["Profession/Career", "Reputation/Fame", "Authority/Power", "Father (South India)", "Knees", "Public Life", "Government"] },
+            11: { name: "Labha Bhava (11th House)", theme: "Gains, Networks, Desires", significations: ["Gains/Income", "Elder siblings", "Friends/Network", "Fulfillment of desires", "Awards", "Calves/Ankles", "Hopes"] },
+            12: { name: "Vyaya Bhava (12th House)", theme: "Losses, Moksha, Foreign", significations: ["Expenses/Losses", "Foreign lands", "Spirituality/Moksha", "Sleep/Dreams", "Hospitalization", "Feet", "Isolation"] }
+        };
+
         const RASHI_DATA = [
             ["Aries", "Meṣ", "Mars"],
             ["Taurus", "Vṛṣ", "Venus"],
@@ -1741,12 +1853,25 @@
         function renderSouthChart(containerId, planets, vargaKey, lagnaSignId = 0) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
+            
+            // Native Name for Center
+            const nativeName = document.getElementById('name').value || "Native";
+            
+            // Stats Counters
+            let kendraCount = 0;
+            let trikonaCount = 0;
+            
             for(let i=0; i<16; i++) {
                 const div = document.createElement('div');
                 if (i===5 || i===6 || i===9 || i===10) {
                      if(i===5) {
                          div.className = "chart-center";
-                         div.innerHTML = `<span class="font-bold text-gray-300 text-[10px] border border-gray-700 tracking-widest">${vargaKey.toUpperCase()}</span>`;
+                         div.innerHTML = `
+                            <div class="flex flex-col gap-1">
+                                <span class="font-bold text-primary tracking-widest text-xs uppercase">${vargaKey === 'd1' ? 'Rashi Chart' : 'Navamsa'}</span>
+                                <span class="text-[10px] font-semibold opacity-60">${nativeName}</span>
+                            </div>
+                         `;
                          container.appendChild(div);
                      }
                      continue; 
@@ -1767,11 +1892,26 @@
                  const lordClass = getLordClass(rashiLord);
                  
                  // Calculate house number (bhava) from lagna
-                 // lagnaSignId is 0-indexed, signId is 1-indexed
-                 // House 1 = lagna sign, House 2 = lagna+1, etc.
                  const houseNum = ((signId - 1 - lagnaSignId + 12) % 12) + 1;
                  
-                 div.className = `chart-cell border-[0.5px] border-gray-100 hover:shadow-inner ${lordClass}`;
+                 // Identify planets in this house first
+                 const housePlanets = planets.filter(p => {
+                     const pSignId = p.vargas[vargaKey].signId + 1;
+                     return pSignId === signId;
+                 });
+                 
+                 // Update Stats if D1
+                 if(vargaKey === 'd1') {
+                     const pCount = housePlanets.length;
+                     if([1, 4, 7, 10].includes(houseNum)) kendraCount += pCount;
+                     if([1, 5, 9].includes(houseNum)) trikonaCount += pCount;
+                 }
+                 
+                 // Add class (remove conflicting border classes as CSS handles it)
+                 div.className = `chart-cell ${lordClass}`;
+                 
+                 // Add Click Handler for Bhava Modal
+                 div.onclick = () => window.openBhavaModal(houseNum, signId, rashiInfo, housePlanets);
                  
                  // Add house number (top-left) and rashi with sign number (bottom-right)
                  div.innerHTML = `
@@ -1779,16 +1919,21 @@
                      <span class="rashi-label text-gray-500">${rashiAbbrev} (${signId})</span>
                  `;
                  
-                 planets.forEach(p => {
-                     const pSignId = p.vargas[vargaKey].signId + 1;
-                     if(pSignId === signId) {
-                         const pSpan = document.createElement('span');
-                         pSpan.className = `planet-glyph planet-${p.name}`;
-                         pSpan.innerText = p.name.substring(0,2);
-                         div.appendChild(pSpan);
-                     }
+                 housePlanets.forEach(p => {
+                     const pSpan = document.createElement('span');
+                     pSpan.className = `planet-glyph planet-${p.name}`;
+                     pSpan.innerText = p.name.substring(0,2);
+                     div.appendChild(pSpan);
                  });
                  container.appendChild(div);
+            }
+            
+            // Update DOM for stats
+            if(vargaKey === 'd1') {
+                const kEl = document.getElementById('stats-kendra');
+                const tEl = document.getElementById('stats-trikona');
+                if(kEl) kEl.innerText = kendraCount;
+                if(tEl) tEl.innerText = trikonaCount;
             }
         }
 
@@ -2272,13 +2417,11 @@
             // Update visual
             const pill = document.querySelector(`[data-event-id="${eventId}"]`);
             if (pill) pill.classList.toggle('active');
-            // Re-render calendar AND chart if data exists (global sync)
+            // Re-render calendar AND chart if data exists
             if (calendarData.length > 0) {
                 renderCalendarMonth();
-                // Also update chart if it's initialized
-                if (d3Chart.svg) {
-                    renderD3Chart(currentChartTimeframe);
-                }
+                // Also update heatmap chart
+                renderHeatmapChart(currentChartTimeframe);
             }
         };
 
@@ -2869,6 +3012,70 @@
         
         window.closeDayModal = () => {
             document.getElementById('day-modal-backdrop').classList.add('hidden');
+        };
+        
+        // --- BHAVA (HOUSE) MODAL ---
+        window.openBhavaModal = (houseNum, signId, rashiInfo, housePlanets) => {
+            const backdrop = document.getElementById('bhava-modal-backdrop');
+            const title = document.getElementById('bhava-modal-title');
+            const subtitle = document.getElementById('bhava-modal-subtitle');
+            const content = document.getElementById('bhava-modal-content');
+            
+            const bhava = BHAVA_DATA[houseNum];
+            const signName = rashiInfo[0];
+            const signLord = rashiInfo[2];
+            
+            title.innerHTML = `<span class="text-primary">House ${houseNum}</span>: ${bhava.name.split('(')[0].trim()}`;
+            subtitle.innerHTML = `Governs: ${bhava.theme}`;
+            
+            let html = `
+                <div class="space-y-4">
+                    <!-- Sign Information -->
+                    <div class="p-3 bg-base-200 rounded-lg flex items-center justify-between">
+                        <div>
+                            <div class="text-xs uppercase font-bold opacity-60">Occupying Sign</div>
+                            <div class="text-lg font-bold">${signName}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs uppercase font-bold opacity-60">Sign Lord</div>
+                            <div class="text-lg font-bold ${getLordClass(signLord)} px-2 rounded">${signLord}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Planets in House -->
+                    <div>
+                        <div class="text-xs uppercase font-bold opacity-60 mb-2">Planets in this House</div>
+                        ${housePlanets.length > 0 
+                            ? `<div class="flex flex-wrap gap-2">
+                                ${housePlanets.map(p => `
+                                    <div class="badge badge-lg p-3 gap-2 planet-${p.name} bg-opacity-10 opacity-100">
+                                        <span class="font-bold">${p.name}</span>
+                                        <span class="text-xs opacity-70">${astroEngine.decimalToDMS(p.vargas[currentChartVarga || 'd1'].longitude)}</span>
+                                    </div>
+                                `).join('')}
+                               </div>`
+                            : `<div class="text-sm opacity-50 italic">No planets in this house</div>`
+                        }
+                    </div>
+                    
+                    <div class="divider"></div>
+                    
+                    <!-- Significations -->
+                    <div>
+                        <div class="text-xs uppercase font-bold opacity-60 mb-2">Key Significations</div>
+                        <div class="flex flex-wrap gap-2">
+                            ${bhava.significations.map(s => `<div class="badge badge-outline">${s}</div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            backdrop.classList.remove('hidden');
+        };
+        
+        window.closeBhavaModal = () => {
+            document.getElementById('bhava-modal-backdrop').classList.add('hidden');
         };
 
         // Initialize theme on page load
