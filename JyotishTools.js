@@ -127,7 +127,13 @@ class JyotishTools {
             default: vargaSignId = (signIndex * vargaNum + part) % 12; 
         }
         const rashis = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
-        return { signId: vargaSignId, signName: rashis[vargaSignId] };
+        
+        // Calculate accrued degrees within the amsa
+        const degInAmsa = degInSign % divSpan;
+        const projectedDeg = (degInAmsa / divSpan) * 30;
+        const vargaLongitude = (vargaSignId * 30) + projectedDeg;
+        
+        return { signId: vargaSignId, signName: rashis[vargaSignId], longitude: vargaLongitude };
     }
 
     // --- 2. VIMSHOTTARI --- (Existing)

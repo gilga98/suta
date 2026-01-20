@@ -920,10 +920,6 @@
                                  <span class="font-bold badge badge-sm badge-neutral" id="stats-trikona">-</span>
                              </div>
                              
-                             <!-- Benefic/Malefic -->
-                             <div class="p-2 bg-base-200 rounded-lg flex justify-between items-center col-span-2 cursor-help" title="Natural Benefics (Jup,Ven,Mer*,Mon*) vs Malefics (Sat,Mar,Sun,Rah,Ket)">
-                                 <div class="flex gap-2">
-                                     <span class="font-bold text-success">Benefics</span>
                                      <span class="badge badge-sm badge-success badge-outline" id="stats-benefic">-</span>
                                  </div>
                                  <div class="w-px h-4 bg-gray-300"></div>
@@ -1956,14 +1952,27 @@
                  div.dataset.houseNum = houseNum; // For aspects calculation
                  div.dataset.signId = signId;
                  
-                 // Add Click Handler for Bhava Modal
-                 div.onclick = () => window.openBhavaModal(houseNum, signId, rashiInfo, housePlanets);
+                 // Remove Click Handler for Bhava Modal from main div
+                 div.onclick = null;
                  
                  // Add house number (top-left) and rashi with sign number (bottom-right)
+                 // content-center is unused, using absolute positioning
+                 
+                 // Create Info Icon Button (Absolute Top Right)
+                 // Using an SVG icon for cleanliness
+                 const infoBtn = document.createElement('button');
+                 infoBtn.className = "absolute top-0.5 right-0.5 btn btn-circle btn-ghost btn-xs w-4 h-4 min-h-0 p-0 z-10 opacity-40 hover:opacity-100 hover:bg-base-200 transition-opacity";
+                 infoBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-primary"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>`;
+                 infoBtn.onclick = (e) => {
+                     e.stopPropagation();
+                     window.openBhavaModal(houseNum, signId, rashiInfo, housePlanets, vargaKey);
+                 };
+                 
                  div.innerHTML = `
                      <span class="house-label">${houseNum}</span>
                      <span class="rashi-label text-gray-500">${rashiAbbrev} (${signId})</span>
                  `;
+                 div.appendChild(infoBtn);
                  
                  housePlanets.forEach(p => {
                      const pSpan = document.createElement('span');
@@ -1978,21 +1987,16 @@
             if(vargaKey === 'd1') {
                 const kEl = document.getElementById('stats-kendra');
                 const tEl = document.getElementById('stats-trikona');
-                const bEl = document.getElementById('stats-benefic');
-                const mEl = document.getElementById('stats-malefic');
                 const sEl = document.getElementById('stats-strongest');
-                
-                if(kEl) kEl.innerText = kendraCount;
-                if(tEl) tEl.innerText = trikonaCount;
-                if(bEl) bEl.innerText = beneficCount;
-                if(mEl) mEl.innerText = maleficCount;
+
                 
                 // Calculate strongest planet if Shadbala data exists
                 // We'll expose shadbalaData globally during generation
                 if(window.currentShadbalaData) {
                     let strongest = { p: '-', v: 0 };
-                    window.currentShadbalaData.forEach(s => {
-                         if(s.total > strongest.v) strongest = { p: s.planet, v: s.total };
+                    Object.entries(window.currentShadbalaData).forEach(([pName, data]) => {
+                         const val = parseFloat(data.total);
+                         if(val > strongest.v) strongest = { p: pName, v: val };
                     });
                     if(sEl) sEl.innerText = `${strongest.p} (${strongest.v.toFixed(0)})`;
                 }
@@ -3077,7 +3081,7 @@
         };
         
         // --- BHAVA (HOUSE) MODAL ---
-        window.openBhavaModal = (houseNum, signId, rashiInfo, housePlanets) => {
+        window.openBhavaModal = (houseNum, signId, rashiInfo, housePlanets, vargaKey) => {
             const backdrop = document.getElementById('bhava-modal-backdrop');
             const title = document.getElementById('bhava-modal-title');
             const subtitle = document.getElementById('bhava-modal-subtitle');
@@ -3112,7 +3116,7 @@
                                 ${housePlanets.map(p => `
                                     <div class="badge badge-lg p-3 gap-2 planet-${p.name} bg-opacity-10 opacity-100">
                                         <span class="font-bold">${p.name}</span>
-                                        <span class="text-xs opacity-70">${astroEngine.decimalToDMS(p.vargas[currentChartVarga || 'd1'].longitude)}</span>
+                                        <span class="text-xs opacity-70">${astroEngine.decimalToDMS(p.vargas[vargaKey || 'd1'].longitude)}</span>
                                     </div>
                                 `).join('')}
                                </div>`
@@ -3143,92 +3147,196 @@
         // --- ASPECT VISUALIZATION ---
         
         let showAspects = false;
+        let aspectFilter = new Set(['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu']); // Default all
         
         window.toggleAspects = () => {
              showAspects = !showAspects;
              const btnText = document.getElementById('aspect-btn-text');
              if(btnText) btnText.innerText = showAspects ? "Hide Aspects" : "Show Aspects";
              
+             // Toggle Filter Panels for BOTH D1 and D9 (or any others added later)
+             const chartIds = ['d1', 'd9'];
+             
+             chartIds.forEach(chartId => {
+                 const container = document.getElementById(`chart-container-${chartId}`);
+                 if(!container) return;
+                 
+                 let filterPanel = document.getElementById(`aspect-filter-panel-${chartId}`);
+                 
+                 if(showAspects) {
+                     if(!filterPanel) {
+                         // Create Filter Panel
+                         filterPanel = document.createElement('div');
+                         filterPanel.id = `aspect-filter-panel-${chartId}`;
+                         filterPanel.className = "mt-4 p-3 bg-base-200 rounded-xl grid grid-cols-5 gap-2 text-xs";
+                         
+                         const planets = ['Sun', 'Moon', 'Mars', 'Mer', 'Jup', 'Ven', 'Sat', 'Rah', 'Ket'];
+                         const fullNames = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+                         
+                         filterPanel.innerHTML = fullNames.map((p, i) => `
+                            <button onclick="toggleAspectFilter('${p}')" id="aspect-filter-${chartId}-${p}" class="btn btn-xs ${aspectFilter.has(p) ? 'btn-primary' : 'btn-ghost border-gray-400'}">
+                                ${planets[i]}
+                            </button>
+                         `).join('');
+                         
+                         // Add "All/None" buttons
+                         filterPanel.innerHTML += `
+                            <button onclick="setAspectFilterAll(true)" class="btn btn-xs btn-outline col-span-2">All</button>
+                            <button onclick="setAspectFilterAll(false)" class="btn btn-xs btn-outline col-span-3">Clear</button>
+                         `;
+                         
+                         container.appendChild(filterPanel);
+                     } else {
+                         filterPanel.classList.remove('hidden');
+                     }
+                 } else {
+                     if(filterPanel) filterPanel.classList.add('hidden');
+                 }
+             });
+
              if(showAspects) {
                  drawAspectLines();
                  window.addEventListener('resize', drawAspectLines);
+                 
+                 // If tabs switch, we need to redraw
+                 const tabs = document.querySelectorAll('.tab');
+                 tabs.forEach(t => t.addEventListener('click', () => setTimeout(drawAspectLines, 100)));
              } else {
-                 const svg = document.getElementById('aspect-overlay');
-                 if(svg) svg.remove();
+                 chartIds.forEach(chartId => {
+                     const svg = document.getElementById(`aspect-overlay-${chartId}`);
+                     if(svg) svg.remove();
+                 });
                  window.removeEventListener('resize', drawAspectLines);
              }
         };
-        
-        function drawAspectLines() {
-            const container = document.getElementById('chart-d1');
-            if(!container) return;
-            
-            // Remove existing
-            const existing = document.getElementById('aspect-overlay');
-            if(existing) existing.remove();
-            
-            const rect = container.getBoundingClientRect();
-            
-            // Create SVG Layer
-            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-            svg.id = "aspect-overlay";
-            svg.setAttribute("width", "100%");
-            svg.setAttribute("height", "100%");
-            svg.style.position = "absolute";
-            svg.style.top = "0";
-            svg.style.left = "0";
-            svg.style.pointerEvents = "none";
-            svg.style.zIndex = "10";
-            
-            // Get Planetry Positions from window.currentHouseSignificators (approx) or iterate cells
-            // Better: Iterate generic 1-12 houses calculate positions based on chart-cell-index
-            
-            // Map houses to cell coordinates
-            // We need to find which CELL index corresponds to which HOUSE number
-            // renderSouthChart stores houseNum in dataset
-            
-            const houseCenters = {};
-            const cells = container.querySelectorAll('.chart-cell');
-            cells.forEach(c => {
-                 const hNum = parseInt(c.dataset.houseNum);
-                 const cRect = c.getBoundingClientRect();
-                 // Calculate center relative to container
-                 houseCenters[hNum] = {
-                     x: cRect.left + cRect.width/2 - rect.left,
-                     y: cRect.top + cRect.height/2 - rect.top
-                 };
-                 
-                 // Check occupancy (we can get this from innerHTML glyphs or better logic)
-                 // But we have access to `calendarData` or just reuse logic?
-                 // Let's rely on finding planet glyphs inside the cell to know WHO is there
-                 const glyphs = c.querySelectorAll('.planet-glyph');
-                 glyphs.forEach(g => {
-                     let pName = "";
-                     if(g.classList.contains('planet-Mars')) pName="Mars";
-                     else if(g.classList.contains('planet-Jupiter')) pName="Jupiter";
-                     else if(g.classList.contains('planet-Saturn')) pName="Saturn";
-                     else if(g.classList.contains('planet-Sun')) pName="Sun";
-                     else if(g.classList.contains('planet-Moon')) pName="Moon";
-                     else if(g.classList.contains('planet-Mercury')) pName="Mercury";
-                     else if(g.classList.contains('planet-Venus')) pName="Venus";
-                     else if(g.classList.contains('planet-Rahu')) pName="Rahu"; // Rahu/Ketu usually don't cast full aspect in generic view but let's see logic
-                     
-                     if(pName) {
-                         // Determine aspects
-                         let aspects = [7];
-                         if(pName === 'Mars') aspects = [4, 7, 8];
-                         if(pName === 'Jupiter') aspects = [5, 7, 9];
-                         if(pName === 'Saturn') aspects = [3, 7, 10];
-                         
-                         // Store for drawing later (to avoid drawing immediately and missing target coords)
-                         if(!window._aspectsToDraw) window._aspectsToDraw = [];
-                         window._aspectsToDraw.push({from: hNum, planet: pName, aspects: aspects});
+
+        window.toggleAspectFilter = (p) => {
+             const chartIds = ['d1', 'd9'];
+             
+             if(aspectFilter.has(p)) {
+                 aspectFilter.delete(p);
+                 chartIds.forEach(id => {
+                     const btn = document.getElementById(`aspect-filter-${id}-${p}`);
+                     if(btn) {
+                         btn.classList.remove('btn-primary');
+                         btn.classList.add('btn-ghost', 'border-gray-400');
                      }
                  });
-            });
+             } else {
+                 aspectFilter.add(p);
+                 chartIds.forEach(id => {
+                     const btn = document.getElementById(`aspect-filter-${id}-${p}`);
+                     if(btn) {
+                         btn.classList.add('btn-primary');
+                         btn.classList.remove('btn-ghost', 'border-gray-400');
+                     }
+                 });
+             }
+             drawAspectLines();
+        };
+
+        window.setAspectFilterAll = (enable) => {
+             const fullNames = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+             if(enable) {
+                 fullNames.forEach(p => aspectFilter.add(p));
+             } else {
+                 aspectFilter.clear();
+             }
+             
+             const chartIds = ['d1', 'd9'];
+             
+             fullNames.forEach(p => {
+                 chartIds.forEach(id => {
+                     const btn = document.getElementById(`aspect-filter-${id}-${p}`);
+                     if(btn) {
+                         if(enable) {
+                             btn.classList.add('btn-primary');
+                             btn.classList.remove('btn-ghost', 'border-gray-400');
+                         } else {
+                             btn.classList.remove('btn-primary');
+                             btn.classList.add('btn-ghost', 'border-gray-400');
+                         }
+                     }
+                 });
+             });
+             drawAspectLines();
+        };
+
+        function drawAspectLines() {
+            // Draw for ALL active charts
+            const chartIds = ['d1', 'd9'];
             
-            if(window._aspectsToDraw) {
-                window._aspectsToDraw.forEach(item => {
+            chartIds.forEach(chartId => {
+                const container = document.getElementById(`chart-container-${chartId}`);
+                if(!container || container.classList.contains('hidden')) return; // Only if container visible? Actually chart grid inside
+                
+                // Usually tabs toggle 'hidden' on the container.
+                // Mobile: tabs switch visibility. Desktop: Maybe sticky?
+                // Check if hidden relative to style
+                if(container.offsetParent === null) return;
+                
+                const chartGrid = document.getElementById(`chart-${chartId}`);
+                if(!chartGrid) return;
+
+                // Remove existing SVG for THIS chart
+                const existing = document.getElementById(`aspect-overlay-${chartId}`);
+                if(existing) existing.remove();
+                
+                const rect = chartGrid.getBoundingClientRect();
+                
+                // Create SVG Layer
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.id = `aspect-overlay-${chartId}`;
+                svg.setAttribute("width", "100%");
+                svg.setAttribute("height", "100%");
+                svg.style.position = "absolute";
+                svg.style.top = "0";
+                svg.style.left = "0";
+                svg.style.pointerEvents = "none";
+                svg.style.zIndex = "10";
+                
+                // Calculate centers
+                const houseCenters = {};
+                const cells = chartGrid.querySelectorAll('.chart-cell');
+                
+                const aspectsToDraw = [];
+                
+                cells.forEach(c => {
+                     const hNum = parseInt(c.dataset.houseNum);
+                     const cRect = c.getBoundingClientRect();
+                     // Calculate center relative to chartGrid
+                     houseCenters[hNum] = {
+                         x: cRect.left + cRect.width/2 - rect.left,
+                         y: cRect.top + cRect.height/2 - rect.top
+                     };
+                     
+                     // Find planets
+                     const glyphs = c.querySelectorAll('.planet-glyph');
+                     glyphs.forEach(g => {
+                         let pName = "";
+                         if(g.classList.contains('planet-Mars')) pName="Mars";
+                         else if(g.classList.contains('planet-Jupiter')) pName="Jupiter";
+                         else if(g.classList.contains('planet-Saturn')) pName="Saturn";
+                         else if(g.classList.contains('planet-Sun')) pName="Sun";
+                         else if(g.classList.contains('planet-Moon')) pName="Moon";
+                         else if(g.classList.contains('planet-Mercury')) pName="Mercury";
+                         else if(g.classList.contains('planet-Venus')) pName="Venus";
+                         else if(g.classList.contains('planet-Rahu')) pName="Rahu"; 
+                         else if(g.classList.contains('planet-Ketu')) pName="Ketu";
+                         
+                         if(pName && aspectFilter.has(pName)) {
+                             let aspects = [7];
+                             if(pName === 'Mars') aspects = [4, 7, 8];
+                             if(pName === 'Jupiter') aspects = [5, 7, 9];
+                             if(pName === 'Saturn') aspects = [3, 7, 10];
+                             if(pName === 'Rahu' || pName === 'Ketu') aspects = [5, 7, 9]; 
+                             
+                             aspectsToDraw.push({from: hNum, planet: pName, aspects: aspects});
+                         }
+                     });
+                });
+                
+                aspectsToDraw.forEach(item => {
                     item.aspects.forEach(aspect => {
                          const targetHouse = ((item.from + aspect - 1) % 12) || 12; // 1-based wrapping
                          
@@ -3239,28 +3347,26 @@
                              const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
                              // Curvy line
                              const d = `M ${start.x} ${start.y} Q ${rect.width/2} ${rect.height/2} ${end.x} ${end.y}`;
-                             // Straight line for clarity
-                             // const d = `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
                              
                              line.setAttribute("d", d);
                              line.setAttribute("stroke", getAspectColor(item.planet));
                              line.setAttribute("stroke-width", "2");
                              line.setAttribute("stroke-opacity", "0.4");
                              line.setAttribute("fill", "none");
-                             // Add arrow marker? No, too cluttered.
                              
                              svg.appendChild(line);
                          }
                     });
                 });
-                delete window._aspectsToDraw;
-            }
-            
-            // Append SVG to container (it needs relative positioning)
-            if(getComputedStyle(container).position === 'static') {
-                 container.style.position = 'relative'; 
-            }
-            container.appendChild(svg);
+                
+                chartGrid.appendChild(svg);
+                // chartGrid needs relative positioning? It's a grid so usually static. 
+                // We appended SVG to chartGrid. chartGrid needs position relative.
+                const style = window.getComputedStyle(chartGrid);
+                if(style.position === 'static') {
+                    chartGrid.style.position = 'relative';
+                }
+            });
         }
         
         function getAspectColor(planet) {
