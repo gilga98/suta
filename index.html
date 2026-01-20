@@ -1218,21 +1218,24 @@
                      
 
                      <!-- Month Navigation -->
-                      <div class="month-nav mb-4 px-2 gap-2">
-                          <button onclick="changeCalendarMonth(-1)" class="btn btn-ghost btn-sm btn-circle">
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                      <div class="month-nav flex items-center justify-between mb-4 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                          <button onclick="changeCalendarMonth(-1)" class="btn btn-ghost btn-sm btn-circle hover:bg-white hover:shadow-sm">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                           </button>
                           
-                          <div class="flex items-center gap-2">
-                              <div class="month-title text-gray-800 whitespace-nowrap" id="calendar-month-title">January 2026</div>
-                              <!-- Jump to Date Picker -->
+                          <div class="relative flex items-center justify-center flex-1 mx-4">
+                              <div class="month-title text-base font-bold text-gray-800 flex items-center gap-2 pointer-events-none">
+                                  <span id="calendar-month-title">January 2026</span>
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                              </div>
+                              <!-- Invisible Overlay Input -->
                               <input type="month" id="calendar-jump-picker" 
-                                     class="input input-xs input-bordered w-32 bg-transparent text-gray-500 focus:text-primary" 
+                                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                                      onchange="jumpToDate(this.value)">
                           </div>
 
-                          <button onclick="changeCalendarMonth(1)" class="btn btn-ghost btn-sm btn-circle">
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                          <button onclick="changeCalendarMonth(1)" class="btn btn-ghost btn-sm btn-circle hover:bg-white hover:shadow-sm">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                           </button>
                       </div>
                      
@@ -1423,13 +1426,13 @@
 
         let tsControl;
         
-        // --- CALENDAR STATE ---
+        // Global State
         let calendarData = [];           // Generated calendar array
         let calendarNatalData = null;    // Natal chart data for calendar
-        let activeEventTypes = new Set(['marriage', 'career', 'finance']); // Default selections
-        let currentCalendarMonth = new Date();  // Currently displayed month
-        let calendarBirthDate = null;
         let calendarMoonLong = 0;
+        let calendarBirthDate = null;
+        let currentCalendarMonth = new Date(); // Initialize directly
+        let activeEventTypes = new Set(['marriage', 'career', 'finance', 'education']); // Default selections
 
         window.onload = async () => {
             try {
@@ -2878,6 +2881,11 @@
                                'July', 'August', 'September', 'October', 'November', 'December'];
             const dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             document.getElementById('calendar-month-title').textContent = `${monthNames[month]} ${year}`;
+            
+            // Sync date picker value
+            const pickerVal = `${year}-${String(month + 1).padStart(2, '0')}`;
+            const picker = document.getElementById('calendar-jump-picker');
+            if(picker) picker.value = pickerVal;
             
             // Empty cells before first day
             for (let i = 0; i < startDayOfWeek; i++) {
