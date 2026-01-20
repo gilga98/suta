@@ -91,8 +91,8 @@ const EVENT_TYPES = [
         id: "career",
         name: "Career / Job Change",
         icon: "💼",
-        houses: [2, 6, 10],
-        description: "10=Profession, 6=Service, 2=Income"
+        houses: [2, 6, 10, 11],
+        description: "10=Profession, 6=Service, 2=Income, 11=Gains"
     },
     {
         id: "finance",
@@ -384,6 +384,43 @@ class KPEventEngine {
         // Special handling for Rahu & Ketu - they act as agents of their depositors
         // For now, we'll handle them through star lord connection
         
+        // Build a map of which nakshatras have planets in them (for self-strength detection)
+        // Self-strength: If no planet is in a planet's nakshatra, it gives results with swapped L1/L2 priority
+        const nakshatraOccupancy = {}; // nakIndex -> [list of planets in this nakshatra]
+        natalPlanets.forEach(planet => {
+            if (planet.name === "Ascendant" || planet.nakshatraId === undefined) return;
+            const nakIndex = planet.nakshatraId;
+            if (!nakshatraOccupancy[nakIndex]) {
+                nakshatraOccupancy[nakIndex] = [];
+            }
+            nakshatraOccupancy[nakIndex].push(planet.name);
+        });
+        
+        // Determine which planets are "self-strength" (no other planets in their star)
+        // A planet P is self-strength if no planet (other than P itself) has P as its nakshatra lord
+        const selfStrengthPlanets = new Set();
+        planetNames.forEach(planetName => {
+            // Find all nakshatras ruled by this planet
+            const ruledNakshatras = [];
+            NAKSHATRA_LORDS.forEach((lord, nakIdx) => {
+                if (lord === planetName) ruledNakshatras.push(nakIdx);
+            });
+            
+            // Check if any other planet occupies these nakshatras
+            let hasTenants = false;
+            ruledNakshatras.forEach(nakIdx => {
+                const occupants = nakshatraOccupancy[nakIdx] || [];
+                // Check if any planet OTHER than this one is there
+                if (occupants.some(p => p !== planetName)) {
+                    hasTenants = true;
+                }
+            });
+            
+            if (!hasTenants) {
+                selfStrengthPlanets.add(planetName);
+            }
+        });
+        
         // Now build significators for each planet using KP hierarchy
         natalPlanets.forEach(planet => {
             if (planet.name === "Ascendant" || !planet.nakshatraId) return;
@@ -391,37 +428,74 @@ class KPEventEngine {
             const planetName = planet.name;
             const starLord = NAKSHATRA_LORDS[planet.nakshatraId];
             
-            // Check for self-strength (TODO: requires checking if any planets are in this planet's nakshatra)
-            // For now, we'll use standard order
+            // Check if this planet's star lord is self-strength
+            // Per KP: If star lord has no tenants, Level 2 (planet's occupancy) becomes stronger than Level 1
+            const isSelfStrength = selfStrengthPlanets.has(starLord);
             
-            // LEVEL 1: House(s) occupied by Star Lord
-            if (planetOccupancy[starLord] !== undefined) {
-                const house = planetOccupancy[starLord];
-                this.significatorLevels[planetName].level1.push(house);
-                this.houseSignificators[planetName].add(house);
-            }
-            
-            // LEVEL 2: House occupied by planet itself
-            if (planetOccupancy[planetName] !== undefined) {
-                const house = planetOccupancy[planetName];
-                this.significatorLevels[planetName].level2.push(house);
-                this.houseSignificators[planetName].add(house);
-            }
-            
-            // LEVEL 3: Houses owned by Star Lord
-            if (planetOwnership[starLord]) {
-                planetOwnership[starLord].forEach(house => {
-                    this.significatorLevels[planetName].level3.push(house);
+            if (isSelfStrength) {
+                // SELF-STRENGTH ORDER: L2 -> L1 -> L4 -> L3 (swapped priority)
+                
+                // LEVEL 1 (now strongest): House occupied by planet itself
+                if (planetOccupancy[planetName] !== undefined) {
+                    const house = planetOccupancy[planetName];
+                    this.significatorLevels[planetName].level1.push(house);
                     this.houseSignificators[planetName].add(house);
-                });
-            }
-            
-            // LEVEL 4: Houses owned by planet itself
-            if (planetOwnership[planetName]) {
-                planetOwnership[planetName].forEach(house => {
-                    this.significatorLevels[planetName].level4.push(house);
+                }
+                
+                // LEVEL 2: House(s) occupied by Star Lord
+                if (planetOccupancy[starLord] !== undefined) {
+                    const house = planetOccupancy[starLord];
+                    this.significatorLevels[planetName].level2.push(house);
                     this.houseSignificators[planetName].add(house);
-                });
+                }
+                
+                // LEVEL 3: Houses owned by planet itself
+                if (planetOwnership[planetName]) {
+                    planetOwnership[planetName].forEach(house => {
+                        this.significatorLevels[planetName].level3.push(house);
+                        this.houseSignificators[planetName].add(house);
+                    });
+                }
+                
+                // LEVEL 4: Houses owned by Star Lord
+                if (planetOwnership[starLord]) {
+                    planetOwnership[starLord].forEach(house => {
+                        this.significatorLevels[planetName].level4.push(house);
+                        this.houseSignificators[planetName].add(house);
+                    });
+                }
+            } else {
+                // STANDARD ORDER: L1 -> L2 -> L3 -> L4
+                
+                // LEVEL 1: House(s) occupied by Star Lord
+                if (planetOccupancy[starLord] !== undefined) {
+                    const house = planetOccupancy[starLord];
+                    this.significatorLevels[planetName].level1.push(house);
+                    this.houseSignificators[planetName].add(house);
+                }
+                
+                // LEVEL 2: House occupied by planet itself
+                if (planetOccupancy[planetName] !== undefined) {
+                    const house = planetOccupancy[planetName];
+                    this.significatorLevels[planetName].level2.push(house);
+                    this.houseSignificators[planetName].add(house);
+                }
+                
+                // LEVEL 3: Houses owned by Star Lord
+                if (planetOwnership[starLord]) {
+                    planetOwnership[starLord].forEach(house => {
+                        this.significatorLevels[planetName].level3.push(house);
+                        this.houseSignificators[planetName].add(house);
+                    });
+                }
+                
+                // LEVEL 4: Houses owned by planet itself
+                if (planetOwnership[planetName]) {
+                    planetOwnership[planetName].forEach(house => {
+                        this.significatorLevels[planetName].level4.push(house);
+                        this.houseSignificators[planetName].add(house);
+                    });
+                }
             }
         });
         

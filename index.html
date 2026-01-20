@@ -291,10 +291,20 @@
             display: none; /* Hidden on desktop */
         }
         
+        /* Today highlight */
+        .calendar-cell.today {
+            border: 2px solid #ff385c !important;
+            box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.2);
+        }
+        
         .calendar-cell:hover {
             transform: scale(1.05);
             z-index: 10;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calendar-cell.today:hover {
+            box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.3), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         
         .day-num {
@@ -354,21 +364,70 @@
         .day-modal-backdrop.active .day-modal { transform: scale(1); }
         [data-theme="dark"] .day-modal { background: #1a1a2e; }
         
-        /* ====== CHART STYLES ====== */
+        /* ====== CHART STYLES (HEATMAP REDESIGN) ====== */
         
-        /* Chart Container */
-        .chart-container-wrapper {
-            position: relative;
-            width: 100%;
-            height: 400px;
-            background: white;
-            border-radius: 12px;
+        /* Summary Cards Grid */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .summary-card {
             padding: 1rem;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
         
-        [data-theme="dark"] .chart-container-wrapper {
-            background: #1a1a2e;
+        .summary-card:hover {
+            border-color: #ff385c;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
         }
+        
+        .summary-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-card-icon { font-size: 1rem; }
+        
+        .summary-card-sparkline {
+            height: 32px;
+            margin: 0.5rem 0;
+        }
+        
+        .summary-card-sparkline svg { width: 100%; height: 100%; }
+        
+        .summary-card-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        
+        .summary-card-peak {
+            font-weight: 600;
+            color: #22c55e;
+        }
+        
+        [data-theme="dark"] .summary-card {
+            background: #1a1a2e;
+            border-color: #3d3d55;
+        }
+        
+        [data-theme="dark"] .summary-card-header { color: #9ca3af; }
+        [data-theme="dark"] .summary-card-stats { color: #6b7280; }
         
         /* Timeframe Selector Buttons */
         .timeframe-selector {
@@ -408,57 +467,164 @@
             color: #e5e7eb;
         }
         
-        [data-theme="dark"] .timeframe-btn:hover {
-            border-color: #ff6b8a;
+        [data-theme="dark"] .timeframe-btn:hover { border-color: #ff6b8a; }
+        [data-theme="dark"] .timeframe-btn.active { background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%); color: white; }
+        
+        /* Heatmap Container */
+        .heatmap-wrapper {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
         }
         
-        [data-theme="dark"] .timeframe-btn.active {
-            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%);
-            color: white;
+        [data-theme="dark"] .heatmap-wrapper {
+            background: #1a1a2e;
+            border-color: #3d3d55;
         }
         
-        /* Chart Event Type Toggles */
-        .chart-event-toggles {
+        .heatmap-container {
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            background: var(--color-base-200);
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            gap: 0.5rem;
+            overflow: hidden;
         }
         
-        .chart-event-toggle {
+        .heatmap-y-axis {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding-top: 24px; /* Align with grid */
+        }
+        
+        .heatmap-y-label {
+            height: 24px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            background: white;
-            border: 2px solid transparent;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #64748b;
+            white-space: nowrap;
+        }
+        
+        .heatmap-y-label-icon { font-size: 12px; }
+        
+        [data-theme="dark"] .heatmap-y-label { color: #9ca3af; }
+        
+        .heatmap-scroll {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 8px;
+        }
+        
+        .heatmap-x-axis {
+            display: flex;
+            gap: 3px;
+            margin-bottom: 4px;
+            height: 20px;
+        }
+        
+        .heatmap-x-label {
+            font-size: 9px;
+            color: #94a3b8;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        [data-theme="dark"] .heatmap-x-label { color: #6b7280; }
+        
+        .heatmap-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .heatmap-row {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .heatmap-cell {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.875rem;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            flex-shrink: 0;
         }
         
-        .chart-event-toggle:hover {
-            border-color: #ff385c;
+        .heatmap-cell:hover {
+            transform: scale(1.3);
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         
-        .chart-event-toggle.inactive {
-            opacity: 0.4;
-            filter: grayscale(100%);
+        /* Probability color scale */
+        .heatmap-cell.prob-0 { background: #f1f5f9; }
+        .heatmap-cell.prob-1 { background: #fef3c7; }
+        .heatmap-cell.prob-2 { background: #fde68a; }
+        .heatmap-cell.prob-3 { background: #fcd34d; }
+        .heatmap-cell.prob-4 { background: #a3e635; }
+        .heatmap-cell.prob-5 { background: #4ade80; }
+        .heatmap-cell.prob-6 { background: #22c55e; }
+        .heatmap-cell.prob-7 { background: #16a34a; }
+        
+        [data-theme="dark"] .heatmap-cell.prob-0 { background: #1e293b; }
+        [data-theme="dark"] .heatmap-cell.prob-1 { background: #422006; }
+        [data-theme="dark"] .heatmap-cell.prob-2 { background: #713f12; }
+        [data-theme="dark"] .heatmap-cell.prob-3 { background: #a16207; }
+        [data-theme="dark"] .heatmap-cell.prob-4 { background: #65a30d; }
+        [data-theme="dark"] .heatmap-cell.prob-5 { background: #15803d; }
+        [data-theme="dark"] .heatmap-cell.prob-6 { background: #166534; }
+        [data-theme="dark"] .heatmap-cell.prob-7 { background: #14532d; }
+        
+        /* Heatmap Legend */
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-size: 11px;
+            color: #64748b;
         }
         
-        [data-theme="dark"] .chart-event-toggle {
-            background: #16162a;
-            color: #e5e7eb;
-        }
-        
-        .chart-event-color {
-            width: 12px;
+        .heatmap-legend-gradient {
+            width: 120px;
             height: 12px;
-            border-radius: 2px;
+            border-radius: 6px;
+            background: linear-gradient(to right, #f1f5f9, #fde68a, #4ade80, #16a34a);
+        }
+        
+        [data-theme="dark"] .heatmap-legend { color: #9ca3af; }
+        [data-theme="dark"] .heatmap-legend-gradient {
+            background: linear-gradient(to right, #1e293b, #713f12, #15803d, #14532d);
+        }
+        
+        /* Tooltip */
+        .heatmap-tooltip {
+            position: fixed;
+            z-index: 1000;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        
+        .heatmap-tooltip.visible { opacity: 1; }
+        
+        [data-theme="dark"] .heatmap-tooltip {
+            background: #1a1a2e;
+            border-color: #3d3d55;
+            color: #e5e7eb;
         }
         
         /* Chart View Toggle Tabs */
@@ -480,9 +646,7 @@
             text-align: center;
         }
         
-        .chart-tab:hover {
-            border-color: #ff385c;
-        }
+        .chart-tab:hover { border-color: #ff385c; }
         
         .chart-tab.active {
             background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%);
@@ -490,33 +654,20 @@
             color: white;
         }
         
-        [data-theme="dark"] .chart-tab {
-            background: #16162a;
-            border-color: #3d3d55;
-            color: #e5e7eb;
-        }
-        
-        [data-theme="dark"] .chart-tab.active {
-            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%);
-            color: white;
-        }
+        [data-theme="dark"] .chart-tab { background: #16162a; border-color: #3d3d55; color: #e5e7eb; }
+        [data-theme="dark"] .chart-tab.active { background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%); color: white; }
         
         /* Chart/Calendar Content Containers */
-        .chart-view-content,
-        .calendar-view-content {
-            display: none;
-        }
+        .chart-view-content, .calendar-view-content { display: none; }
+        .chart-view-content.active, .calendar-view-content.active { display: block; }
         
-        .chart-view-content.active,
-        .calendar-view-content.active {
-            display: block;
-        }
-        
-        /* Responsive chart height */
+        /* Mobile Responsive */
         @media (max-width: 640px) {
-            .chart-container-wrapper {
-                height: 300px;
-            }
+            .summary-cards { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+            .summary-card { padding: 0.75rem; }
+            .heatmap-cell { width: 20px; height: 20px; }
+            .heatmap-y-label { font-size: 10px; }
+            .timeframe-btn { padding: 0.4rem 0.75rem; font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -933,20 +1084,43 @@
                              <button class="timeframe-btn" onclick="setChartTimeframe('6M')">6M</button>
                              <button class="timeframe-btn" onclick="setChartTimeframe('1Y')">1Y</button>
                              <button class="timeframe-btn" onclick="setChartTimeframe('ALL')">ALL</button>
-                             <button class="btn btn-sm btn-outline rounded-lg ml-auto" onclick="resetChartZoom()">
-                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                 Reset Zoom
-                             </button>
-                         </div>
-                        
-                         <!-- Chart Container -->
-                         <div class="chart-container-wrapper" id="d3-chart-wrapper">
-                             <svg id="eventProbabilityChart"></svg>
                          </div>
                          
-                         <!-- Chart Help Text -->
+                         <!-- Summary Cards -->
+                         <div class="summary-cards" id="summary-cards">
+                             <!-- Dynamically populated -->
+                         </div>
+                        
+                         <!-- Heatmap Container -->
+                         <div class="heatmap-wrapper">
+                             <div class="heatmap-container">
+                                 <div class="heatmap-y-axis" id="heatmap-y-labels">
+                                     <!-- Y-axis labels (event types) -->
+                                 </div>
+                                 <div class="heatmap-scroll" id="heatmap-scroll">
+                                     <div class="heatmap-x-axis" id="heatmap-x-labels">
+                                         <!-- X-axis labels (dates) -->
+                                     </div>
+                                     <div class="heatmap-grid" id="heatmap-grid">
+                                         <!-- Grid cells -->
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                             <!-- Legend -->
+                             <div class="heatmap-legend">
+                                 <span>Low</span>
+                                 <div class="heatmap-legend-gradient"></div>
+                                 <span>High</span>
+                             </div>
+                         </div>
+                         
+                         <!-- Tooltip (positioned fixed) -->
+                         <div class="heatmap-tooltip" id="heatmap-tooltip"></div>
+                         
+                         <!-- Help Text -->
                          <div class="text-xs text-gray-500 mt-4 px-2">
-                             <strong>💡 Tip:</strong> Use mouse wheel to zoom, click-drag to pan timeline, or click any point to see that day's details.
+                             <strong>💡 Tip:</strong> Scroll horizontally to see more dates. Tap any cell to view details for that day.
                          </div>
                      </div>
                      
@@ -964,15 +1138,23 @@
                      
 
                      <!-- Month Navigation -->
-                     <div class="month-nav mb-4 px-2">
-                         <button onclick="changeCalendarMonth(-1)" class="btn btn-ghost btn-sm btn-circle">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                         </button>
-                         <div class="month-title text-gray-800" id="calendar-month-title">January 2026</div>
-                         <button onclick="changeCalendarMonth(1)" class="btn btn-ghost btn-sm btn-circle">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                         </button>
-                     </div>
+                      <div class="month-nav mb-4 px-2 gap-2">
+                          <button onclick="changeCalendarMonth(-1)" class="btn btn-ghost btn-sm btn-circle">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                          </button>
+                          
+                          <div class="flex items-center gap-2">
+                              <div class="month-title text-gray-800 whitespace-nowrap" id="calendar-month-title">January 2026</div>
+                              <!-- Jump to Date Picker -->
+                              <input type="month" id="calendar-jump-picker" 
+                                     class="input input-xs input-bordered w-32 bg-transparent text-gray-500 focus:text-primary" 
+                                     onchange="jumpToDate(this.value)">
+                          </div>
+
+                          <button onclick="changeCalendarMonth(1)" class="btn btn-ghost btn-sm btn-circle">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                          </button>
+                      </div>
                      
                      <!-- Calendar Grid -->
                      <div class="calendar-grid" id="calendar-grid">
@@ -2099,6 +2281,19 @@
                 }
             }
         };
+
+        window.jumpToDate = (val) => {
+            if(!val) return;
+            const targetDate = new Date(val + '-01'); // YYYY-MM
+            if(isNaN(targetDate.getTime())) return;
+            
+            // Check bounds
+            // Assuming we have generated +/- 5 years. 
+            // If out of bounds, maybe we should regenerate? For now, just clamp or nav.
+            
+            currentCalendarMonth = targetDate;
+            renderCalendarMonth();
+        };
         
         window.generateEventCalendar = () => {
             if (!calendarNatalData || !calendarBirthDate) {
@@ -2133,7 +2328,10 @@
                 null // All event types for data, filter in render
             );
             
-            currentCalendarMonth = new Date(startDate);
+            // Default to TODAY, not 5 years ago
+            currentCalendarMonth = new Date(today);
+            // Ensure we are at the first of the month
+            currentCalendarMonth.setDate(1);
             renderCalendarMonth();
             
             // Show current day's dasha
@@ -2142,41 +2340,52 @@
                 renderCurrentDasha(todayData.dasha);
             }
             
-            // Initialize chart immediately if container is visible (tab is active or not)
-            // Even if hidden, we try to init so it's ready
+            // Initialize heatmap chart
             setTimeout(() => {
-                initializeD3Chart();
-                renderD3Chart(currentChartTimeframe);
+                renderHeatmapChart(currentChartTimeframe);
             }, 100);
         };
         
-        // ===== D3.JS CHART INTEGRATION =====
+        // ===== HEATMAP CHART SYSTEM =====
         
-        let d3Chart = {
-            svg: null,
-            xScale: null,
-            yScale: null,
-            xAxis: null,
-            yAxis: null,
-            zoom: null,
-            currentTransform: null
-        };
         let currentChartTimeframe = '3M';
-        // Removed chartVisibleEvents - use activeEventTypes (GLOBAL SYNC)
         
-        // Helper: Aggregate data for large timeframes
+        // Event type color mapping
+        window.EVENT_COLORS = {
+            'marriage': '#ec4899',
+            'career': '#8b5cf6',
+            'finance': '#22c55e',
+            'education': '#f59e0b',
+            'property': '#06b6d4',
+            'children': '#f97316',
+            'health': '#dc2626',
+            'travel': '#14b8a6',
+            'legal': '#64748b',
+            'spiritual': '#a855f7'
+        };
+        
+        // Get probability color class (0-7 scale)
+        function getProbabilityClass(score) {
+            if (score <= 0) return 'prob-0';
+            if (score <= 15) return 'prob-1';
+            if (score <= 30) return 'prob-2';
+            if (score <= 45) return 'prob-3';
+            if (score <= 60) return 'prob-4';
+            if (score <= 75) return 'prob-5';
+            if (score <= 90) return 'prob-6';
+            return 'prob-7';
+        }
+        
+        // Aggregate data for large timeframes
         function aggregateDataByInterval(data, intervalDays) {
             if (intervalDays <= 1) return data;
             
             const aggregated = [];
-            // Group by interval
             for (let i = 0; i < data.length; i += intervalDays) {
                 const chunk = data.slice(i, i + intervalDays);
                 if (chunk.length === 0) continue;
                 
-                const avgDate = chunk[Math.floor(chunk.length / 2)].date; // Use middle date
-                
-                // Merge events
+                const avgDate = chunk[Math.floor(chunk.length / 2)].date;
                 const eventsMap = new Map();
                 
                 chunk.forEach(day => {
@@ -2205,548 +2414,225 @@
             return aggregated;
         }
         
-        // Event type color mapping (consistent with event pills)
-        window.EVENT_COLORS = {
-            'marriage': '#ec4899',
-            'career': '#8b5cf6',
-            'finance': '#22c55e',
-            'education': '#f59e0b',
-            'property': '#06b6d4',
-            'children': '#f97316',
-            'health': '#dc2626',
-            'travel': '#14b8a6',
-            'legal': '#64748b',
-            'spiritual': '#a855f7'
-        };
-        
-        function initializeD3Chart() {
-            const container = document.getElementById('d3-chart-wrapper');
-            if (!container) {
-                console.warn('D3 chart container not found');
-                return;
-            }
+        // Render summary cards at top
+        function renderSummaryCards(processedData) {
+            const container = document.getElementById('summary-cards');
+            if (!container) return;
             
-            // Check if container is visible
-            const containerRect = container.getBoundingClientRect();
-            if (containerRect.width === 0 || containerRect.height === 0) {
-                console.warn('D3 chart container has zero dimensions, deferring initialization');
-                return;
-            }
+            const activeTypes = EVENT_TYPES.filter(et => activeEventTypes.has(et.id));
             
-            // Clear existing SVG
-            d3.select('#eventProbabilityChart').selectAll('*').remove();
-            
-            const isDark = document.documentElement.dataset.theme === 'dark';
-            const margin = {top: 20, right: 120, bottom: 60, left: 60};
-            
-            // Calculate dimensions with proper fallbacks
-            // FIX: Remove hardcoded min-width of 320px which caused overflow on small screens
-            // Use 100% of container width, but ensure it's at least something visible
-            const containerWidth = containerRect.width > 0 ? containerRect.width : 320; 
-            const containerHeight = Math.max(containerRect.height, 300);
-            
-            // Adjust margins for mobile
-            const isMobile = containerWidth < 600;
-            const effectiveMargin = {
-                top: margin.top, 
-                right: isMobile ? 20 : margin.right, 
-                bottom: margin.bottom, 
-                left: margin.left
-            };
-
-            const width = Math.max(containerWidth - effectiveMargin.left - effectiveMargin.right, 0); // Ensure non-negative
-            const height = Math.max(containerHeight - effectiveMargin.top - effectiveMargin.bottom, 150);
-            
-            // Create SVG
-            const svg = d3.select('#eventProbabilityChart')
-                .attr('width', containerWidth)
-                .attr('height', containerHeight)
-                .style('background', isDark ? '#1a1a2e' : 'white');
-            
-            // Create main group with margins
-            const g = svg.append('g')
-                .attr('transform', `translate(${effectiveMargin.left},${effectiveMargin.top})`);
-            
-            // Create scales
-            d3Chart.xScale = d3.scaleTime().range([0, width]);
-            d3Chart.yScale = d3.scaleLinear().domain([0, 100]).range([height, 0]);
-            
-            // Create axes
-            const gridColor = isDark ? '#3d3d55' : '#e5e7eb';
-            const textColor = isDark ? '#9ca3af' : '#6b7280';
-            
-            d3Chart.xAxis = d3.axisBottom(d3Chart.xScale)
-                .ticks(d3.timeDay.every(7))
-                .tickFormat(d3.timeFormat('%b %d'));
-            
-            d3Chart.yAxis = d3.axisLeft(d3Chart.yScale)
-                .ticks(10)
-                .tickFormat(d => d + '%');
-            
-            // Append X axis
-            g.append('g')
-                .attr('class', 'x-axis')
-                .attr('transform', `translate(0,${height})`)
-                .style('color', textColor)
-                .call(d3Chart.xAxis);
-            
-            // Append Y axis
-            g.append('g')
-                .attr('class', 'y-axis')
-                .style('color', textColor)
-                .call(d3Chart.yAxis);
-            
-            // Add Y axis label
-            g.append('text')
-                .attr('class', 'y-axis-label')
-                .attr('transform', 'rotate(-90)')
-                .attr('y', -45)
-                .attr('x', -height / 2)
-                .attr('fill', textColor)
-                .attr('text-anchor', 'middle')
-                .style('font-size', '12px')
-                .text('Probability Score');
-            
-            // Add grid lines
-            g.append('g')
-                .attr('class', 'grid')
-                .attr('transform', `translate(0,${height})`)
-                .call(d3.axisBottom(d3Chart.xScale).tickSize(-height).tickFormat(''))
-                .style('stroke', gridColor)
-                .style('stroke-opacity', 0.3)
-                .style('stroke-dasharray', '2,2');
-            
-            g.append('g')
-                .attr('class', 'grid')
-                .call(d3.axisLeft(d3Chart.yScale).tickSize(-width).tickFormat(''))
-                .style('stroke', gridColor)
-                .style('stroke-opacity', 0.3)
-                .style('stroke-dasharray', '2,2');
-            
-            // Create clip path for zoom
-            svg.append('defs').append('clipPath')
-                .attr('id', 'clip')
-                .append('rect')
-                .attr('width', width)
-                .attr('height', height);
-            
-            // Add lines group with clip path
-            g.append('g')
-                .attr('class', 'lines-group')
-                .attr('clip-path', 'url(#clip)');
-            
-            // Add zoom behavior
-            const zoom = d3.zoom()
-                .scaleExtent([1, 10])
-                .translateExtent([[0, 0], [width, height]])
-                .extent([[0, 0], [width, height]])
-                .on('zoom', (event) => {
-                    d3Chart.currentTransform = event.transform;
-                    
-                    // Update x scale
-                    const newXScale = event.transform.rescaleX(d3Chart.xScale);
-                    
-                    // Update x axis
-                    g.select('.x-axis').call(d3Chart.xAxis.scale(newXScale));
-                    
-                    // Update lines
-                    g.selectAll('.event-line')
-                        .attr('d', d => {
-                            const line = d3.line()
-                                .x(d => newXScale(d.date))
-                                .y(d => d3Chart.yScale(d.value))
-                                .curve(d3.curveMonotoneX);
-                            return line(d.data);
-                        });
-                    
-                    // Update points
-                    g.selectAll('.event-points circle')
-                        .attr('cx', d => newXScale(d.date));
+            container.innerHTML = activeTypes.map(eventType => {
+                // Calculate stats
+                const scores = processedData.map(d => {
+                    const evt = d.events.find(e => e.type === eventType.id);
+                    return evt ? evt.score : 0;
                 });
-            
-            svg.call(zoom);
-            d3Chart.zoom = zoom;
-            d3Chart.svg = svg;
-
-            // --- WINDOW RESIZE LISTENER ---
-            // Remove existing listener if any to prevent duplicates (though anonymous funcs can't be removed easily, 
-            // the pattern here essentially re-inits logic. Ideally we'd name it. 
-            // For now, checks if we already attached one to avoid multiple in SPA, but here it's full reload.)
-            if (!window.chartResizeListenerAdded) {
-                let resizeTimer;
-                window.addEventListener('resize', () => {
-                    clearTimeout(resizeTimer);
-                    resizeTimer = setTimeout(() => {
-                        // Only redraw if chart container is visible
-                        const container = document.getElementById('d3-chart-wrapper');
-                        if(container && container.offsetParent !== null) {
-                            console.log("Resizing chart...");
-                            initializeD3Chart();
-                            renderD3Chart(currentChartTimeframe);
-                        }
-                    }, 250); // Debounce
+                
+                const avgScore = scores.length > 0 
+                    ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) 
+                    : 0;
+                
+                // Find peak
+                let peakIdx = 0;
+                let peakScore = 0;
+                scores.forEach((s, i) => {
+                    if (s > peakScore) { peakScore = s; peakIdx = i; }
                 });
-                window.chartResizeListenerAdded = true;
-            }
+                
+                const peakDate = processedData[peakIdx]?.date || '';
+                const peakDisplay = peakDate 
+                    ? new Date(peakDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    : '-';
+                
+                // Generate sparkline path
+                const sparklinePath = generateSparklinePath(scores, 100, 28);
+                
+                const color = EVENT_COLORS[eventType.id] || '#64748b';
+                
+                return `
+                    <div class="summary-card" data-event-id="${eventType.id}">
+                        <div class="summary-card-header">
+                            <span class="summary-card-icon">${eventType.icon}</span>
+                            <span>${eventType.name.split('/')[0].trim()}</span>
+                        </div>
+                        <div class="summary-card-sparkline">
+                            <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+                                <path d="${sparklinePath}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="summary-card-stats">
+                            <span>Avg: ${avgScore}%</span>
+                            <span class="summary-card-peak">Peak: ${peakDisplay}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
         
-        function renderD3Chart(timeframe = currentChartTimeframe) {
-            if (!d3Chart.svg || !calendarData || calendarData.length === 0) return;
+        // Generate SVG path for sparkline
+        function generateSparklinePath(scores, width, height) {
+            if (scores.length === 0) return '';
             
+            const maxScore = Math.max(...scores, 1);
+            const step = width / Math.max(scores.length - 1, 1);
+            
+            return scores.map((score, i) => {
+                const x = i * step;
+                const y = height - (score / maxScore) * (height - 4) - 2;
+                return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+            }).join(' ');
+        }
+        
+        // Main heatmap render function
+        function renderHeatmapChart(timeframe = currentChartTimeframe) {
+            if (!calendarData || calendarData.length === 0) return;
             currentChartTimeframe = timeframe;
             
-            // Calculate date range based on timeframe
-            const fullEndDate = new Date(calendarData[calendarData.length - 1].date);
-            const fullStartDate = new Date(calendarData[0].date);
-            
-            // Reference Today
+            // Calculate date range
             const today = new Date();
-            let startDate, endDate;
-            let aggregationInterval = 1;
-            
-            // Start from Today for specific timeframes, or Use full range for ALL
+            let startDate, endDate, aggregationInterval = 1;
             
             switch (timeframe) {
-                case '1W':
-                    startDate = new Date(today);
-                    endDate = new Date(today);
-                    endDate.setDate(today.getDate() + 7);
-                    break;
-                case '1M':
-                    startDate = new Date(today);
-                    endDate = new Date(today);
-                    endDate.setDate(today.getDate() + 30);
-                    break;
-                case '-1M': // Past 1 Month
-                    endDate = new Date(today);
-                    startDate = new Date(today);
-                    startDate.setDate(today.getDate() - 30);
-                    break;
-                case '-1Y': // Past 1 Year
-                    endDate = new Date(today);
-                    startDate = new Date(today);
-                    startDate.setFullYear(today.getFullYear() - 1);
+                case '1W': startDate = new Date(today); endDate = new Date(today); endDate.setDate(today.getDate() + 7); break;
+                case '1M': startDate = new Date(today); endDate = new Date(today); endDate.setDate(today.getDate() + 30); break;
+                case '3M': startDate = new Date(today); endDate = new Date(today); endDate.setDate(today.getDate() + 90); aggregationInterval = 2; break;
+                case '6M': startDate = new Date(today); endDate = new Date(today); endDate.setDate(today.getDate() + 180); aggregationInterval = 3; break;
+                case '1Y': startDate = new Date(today); endDate = new Date(today); endDate.setFullYear(today.getFullYear() + 1); aggregationInterval = 7; break;
+                case 'ALL': default:
+                    startDate = new Date(calendarData[0].date);
+                    endDate = new Date(calendarData[calendarData.length - 1].date);
                     aggregationInterval = 14;
-                    break;
-                case '3M':
-                    startDate = new Date(today);
-                    endDate = new Date(today);
-                    endDate.setDate(today.getDate() + 90);
-                    aggregationInterval = 7; 
-                    break;
-                case '6M':
-                    startDate = new Date(today);
-                    endDate = new Date(today);
-                    endDate.setDate(today.getDate() + 180);
-                    aggregationInterval = 7; 
-                    break;
-                case '1Y':
-                    startDate = new Date(today);
-                    endDate = new Date(today);
-                    endDate.setFullYear(today.getFullYear() + 1);
-                    aggregationInterval = 14; 
-                    break;
-                case 'ALL':
-                default:
-                    startDate = fullStartDate;
-                    endDate = fullEndDate;
-                    const diffMonths = (fullEndDate - fullStartDate) / (1000 * 60 * 60 * 24 * 30);
-                    if(diffMonths > 24) aggregationInterval = 30;
-                    else if(diffMonths > 12) aggregationInterval = 14; 
-                    else if(diffMonths > 3) aggregationInterval = 7;
-                    else aggregationInterval = 1;
                     break;
             }
             
-            // Clamp is handled by the timeframe logic above
-            
-            // Filter and Aggregate
+            // Filter and aggregate
             const filteredData = calendarData.filter(d => {
                 const date = new Date(d.date);
                 return date >= startDate && date <= endDate;
             });
-            const processData = aggregateDataByInterval(filteredData, aggregationInterval);
             
-            // Prepare Series
-            const activeSeries = EVENT_TYPES
-                .filter(et => activeEventTypes.has(et.id))
-                .map(eventType => {
-                    const data = processData.map(day => {
-                        const event = day.events.find(e => e.type === eventType.id);
-                        return {
-                            date: new Date(day.date),
-                            value: event ? event.score : 0,
-                            dateStr: day.date,
-                            isAggregated: day.isAggregated,
-                            dateRange: day.dateRange
-                        };
-                    });
-                    return {
-                        id: eventType.id,
-                        name: eventType.name,
-                        icon: eventType.icon,
-                        color: window.EVENT_COLORS[eventType.id] || '#64748b',
-                        data: data
-                    };
-                });
+            const processedData = aggregateDataByInterval(filteredData, aggregationInterval);
             
-            // Update Domain
-            d3Chart.xScale.domain([startDate, endDate]);
+            // Render summary cards
+            renderSummaryCards(processedData);
             
-            // Update Axes
-            const svg = d3Chart.svg;
-            const margin = {top: 20, right: 120, bottom: 60, left: 60};
+            // Get active event types
+            const activeTypes = EVENT_TYPES.filter(et => activeEventTypes.has(et.id));
             
-            // Smart Ticks
-            const isMobile = window.innerWidth < 600;
-            if (timeframe === 'ALL') {
-                 d3Chart.xAxis.ticks(isMobile ? 3 : d3.timeYear.every(1)).tickFormat(d3.timeFormat('%Y'));
-            } else if (timeframe === '1Y' || timeframe === '-1Y') {
-                d3Chart.xAxis.ticks(isMobile ? 4 : d3.timeMonth.every(2)).tickFormat(d3.timeFormat('%b %Y'));
-            } else if (timeframe === '6M') {
-                d3Chart.xAxis.ticks(isMobile ? 4 : d3.timeMonth.every(1)).tickFormat(d3.timeFormat('%b'));
-            } else {
-                d3Chart.xAxis.ticks(isMobile ? 3 : d3.timeWeek.every(1)).tickFormat(d3.timeFormat('%b %d'));
-            }
-            
-            svg.select('.x-axis').call(d3Chart.xAxis);
-            svg.select('.y-axis').transition().duration(300).call(d3Chart.yAxis);
-            
-            // Draw Lines
-            const line = d3.line()
-                .x(d => d3Chart.xScale(d.date))
-                .y(d => d3Chart.yScale(d.value))
-                .curve(d3.curveMonotoneX);
-            
-            const linesGroup = svg.select('.lines-group');
-            
-            // Remove old points (we use crosshair now)
-            linesGroup.selectAll('.event-points').remove();
-            
-            const lines = linesGroup.selectAll('.event-line').data(activeSeries, d => d.id);
-            lines.exit().remove();
-            
-            lines.enter()
-                .append('path')
-                .attr('class', 'event-line')
-                .style('fill', 'none')
-                .style('stroke-width', 2.5)
-                .style('opacity', 0)
-                .merge(lines)
-                .transition().duration(300)
-                .style('stroke', d => d.color)
-                .style('opacity', 0.8)
-                .attr('d', d => line(d.data));
-            
-            // --- CROSSHAIR & INTERACTION ---
-            
-            // Overlay for mouse events
-            let overlay = svg.select('.interaction-overlay');
-            if (overlay.empty()) {
-                overlay = svg.append('rect')
-                    .attr('class', 'interaction-overlay')
-                    .attr('width', Number(svg.attr('width')) - margin.left - margin.right)
-                    .attr('height', Number(svg.attr('height')) - margin.top - margin.bottom)
-                    .attr('transform', `translate(${margin.left},${margin.top})`)
-                    .style('fill', 'none')
-                    .style('pointer-events', 'all');
-            }
-            
-            // Crosshair Line
-            let crosshair = svg.select('.crosshair-line');
-            if (crosshair.empty()) {
-                crosshair = svg.select('g').append('line')
-                    .attr('class', 'crosshair-line')
-                    .style('stroke', document.documentElement.dataset.theme === 'dark' ? '#eee' : '#333')
-                    .style('stroke-width', 1)
-                    .style('stroke-dasharray', '3,3')
-                    .style('opacity', 0)
-                    .attr('y1', 0)
-                    .attr('y2', Number(svg.attr('height')) - margin.top - margin.bottom);
-            }
-            
-            // Tooltip Container
-            const tooltip = d3.select('#d3-tooltip-container');
-            if (tooltip.empty()) {
-                d3.select('body').append('div')
-                    .attr('id', 'd3-tooltip-container')
-                    .style('position', 'absolute')
-                    .style('opacity', 0)
-                    .style('pointer-events', 'none')
-                    .style('z-index', 1000)
-                    .style('transition', 'opacity 0.1s');
-            }
-            
-            const bisectDate = d3.bisector(d => d.date).left;
-            
-            overlay
-                .on('mousemove', function(event) {
-                    if(activeSeries.length === 0) return;
-                    
-                    const mouseX = d3.pointer(event)[0];
-                    const x0 = d3Chart.xScale.invert(mouseX);
-                    
-                    // Find closest data point index from first series (all aligned)
-                    const series0 = activeSeries[0].data;
-                    const i = bisectDate(series0, x0, 1);
-                    const d0 = series0[i - 1];
-                    const d1 = series0[i];
-                    
-                    let d = d0;
-                    if (d1 && d0) {
-                        d = (x0 - d0.date > d1.date - x0) ? d1 : d0;
-                    } else if (d1) {
-                        d = d1;
-                    }
-                    
-                    if (!d) return;
-                    
-                    const xPos = d3Chart.xScale(d.date);
-                    
-                    // Move Crosshair
-                    crosshair
-                        .attr('x1', xPos)
-                        .attr('x2', xPos)
-                        .style('opacity', 0.5);
-                    
-                    // Build Unified Tooltip Content
-                    const isDark = document.documentElement.dataset.theme === 'dark';
-                    const dateDisplay = d.isAggregated ? d.dateRange : d.date.toLocaleDateString(undefined, {
-                        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
-                    });
-                    
-                    let html = `
-                        <div class="px-3 py-2 rounded-lg shadow-xl border ${isDark ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-200 text-gray-800'} text-xs">
-                            <div class="font-bold mb-2 pb-1 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}">${dateDisplay}</div>
-                            <div class="space-y-1">
-                    `;
-                    
-                    // Add row for each active series
-                    activeSeries.forEach(s => {
-                        // Find value for this series at this index (or closest)
-                        // Since all synced, use index logic or find
-                        // Ideally data is aligned.
-                        const pt = s.data.find(p => p.date.getTime() === d.date.getTime()) || { value: 0 };
-                        
-                        html += `
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full" style="background-color: ${s.color}"></span>
-                                    <span>${s.name}</span>
-                                </div>
-                                <span class="font-mono font-bold">${pt.value}%</span>
-                            </div>
-                        `;
-                    });
-                    
-                    html += `</div>
-                        ${!d.isAggregated ? `<div class="mt-2 text-[10px] opacity-60 italic text-center">Click for details</div>` : ''}
-                    </div>`;
-                    
-                    const tip = d3.select('#d3-tooltip-container');
-                    tip.html(html)
-                        .style('left', (event.pageX + 15) + 'px')
-                        .style('top', (event.pageY + 15) + 'px')
-                        .style('opacity', 1);
-                        
-                })
-                .on('mouseout', function() {
-                    crosshair.style('opacity', 0);
-                    d3.select('#d3-tooltip-container').style('opacity', 0);
-                })
-                .on('click', function(event) {
-                    const mouseX = d3.pointer(event)[0];
-                    const x0 = d3Chart.xScale.invert(mouseX);
-                    const series0 = activeSeries[0].data;
-                    const i = bisectDate(series0, x0, 1);
-                    const d0 = series0[i - 1];
-                    const d1 = series0[i];
-                    let d = (d0 && d1) ? ((x0 - d0.date > d1.date - x0) ? d1 : d0) : (d0 || d1);
-                    if(d) handleChartDrillDown(d.dateStr);
-                });
-
-            // Update timeframe button states
-            document.querySelectorAll('.timeframe-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = Array.from(document.querySelectorAll('.timeframe-btn'))
-                .find(btn => btn.textContent.trim() === timeframe);
-            if (activeBtn) activeBtn.classList.add('active');
-        }
-        
-        function hideTooltip() {
-             d3.select('#d3-tooltip-container').style('opacity', 0);
-        }
-        
-        window.populateChartEventToggles = function() {
-            const container = document.getElementById('chart-event-toggles');
-            if (!container) return;
-            
-            const eventTypes = EVENT_TYPES;
-            
-            // Initialize all events as visible
-            chartVisibleEvents.clear();
-            eventTypes.forEach(et => chartVisibleEvents.add(et.id));
-            
-            container.innerHTML = eventTypes.map(eventType => `
-                <div class="chart-event-toggle" data-event-id="${eventType.id}" onclick="window.toggleChartEventType('${eventType.id}')">
-                    <div class="chart-event-color" style="background: ${window.EVENT_COLORS[eventType.id] || '#64748b'}"></div>
-                    <span>${eventType.icon} ${eventType.name}</span>
+            // Render Y-axis labels
+            const yAxis = document.getElementById('heatmap-y-labels');
+            yAxis.innerHTML = activeTypes.map(et => `
+                <div class="heatmap-y-label">
+                    <span class="heatmap-y-label-icon">${et.icon}</span>
+                    <span>${et.name.split('/')[0].trim().substring(0, 8)}</span>
                 </div>
             `).join('');
-        };
-        
-        window.toggleChartEventType = function(eventId) {
-            if (chartVisibleEvents.has(eventId)) {
-                chartVisibleEvents.delete(eventId);
-            } else {
-                chartVisibleEvents.add(eventId);
-            }
             
-            // Update toggle UI
-            const toggle = document.querySelector(`[data-event-id="${eventId}"]`);
-            if (toggle) {
-                toggle.classList.toggle('inactive');
-            }
+            // Render X-axis labels (intelligent spacing)
+            const xAxis = document.getElementById('heatmap-x-labels');
+            const cellWidth = window.innerWidth < 640 ? 20 : 24;
+            const labelInterval = Math.max(1, Math.floor(processedData.length / 15)); // ~15 labels max
             
-            // Re-render chart
-            renderD3Chart(currentChartTimeframe);
-        };
-        
-        window.setChartTimeframe = function(timeframe) {
-            // Update global state immediately so re-render picks it up
-            currentChartTimeframe = timeframe;
+            xAxis.innerHTML = processedData.map((day, i) => {
+                const showLabel = i % labelInterval === 0;
+                const dateObj = new Date(day.date);
+                const label = showLabel 
+                    ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    : '';
+                return `<div class="heatmap-x-label" style="width:${cellWidth}px">${label}</div>`;
+            }).join('');
             
-            // Re-render chart with new timeframe
-            renderD3Chart(timeframe);
+            // Render grid
+            const grid = document.getElementById('heatmap-grid');
+            grid.innerHTML = activeTypes.map(eventType => {
+                const rowCells = processedData.map(day => {
+                    const evt = day.events.find(e => e.type === eventType.id);
+                    const score = evt ? evt.score : 0;
+                    const probClass = getProbabilityClass(score);
+                    const dateStr = day.date;
+                    
+                    return `<div class="heatmap-cell ${probClass}" 
+                                data-date="${dateStr}" 
+                                data-event="${eventType.id}" 
+                                data-score="${score}"
+                                title="${eventType.name}: ${score}%"
+                                style="width:${cellWidth}px;height:${cellWidth}px"
+                                onclick="handleHeatmapClick('${dateStr}')"
+                                onmouseenter="showHeatmapTooltip(event, '${dateStr}', '${eventType.id}', ${score})"
+                                onmouseleave="hideHeatmapTooltip()"></div>`;
+                }).join('');
+                
+                return `<div class="heatmap-row">${rowCells}</div>`;
+            }).join('');
             
-            // Update UI Active State
+            // Update timeframe buttons
             document.querySelectorAll('.timeframe-btn').forEach(btn => {
                 btn.classList.remove('active');
+                if (btn.textContent.trim() === timeframe) btn.classList.add('active');
             });
-            const activeBtn = Array.from(document.querySelectorAll('.timeframe-btn'))
-                .find(btn => btn.textContent.trim() === timeframe);
-            if (activeBtn) activeBtn.classList.add('active');
-        };
-
-        
-        window.resetChartZoom = function() {
-            if (d3Chart.zoom && d3Chart.svg) {
-                d3Chart.svg.transition().duration(500).call(d3Chart.zoom.transform, d3.zoomIdentity);
-            }
-        };
-        
-        function handleChartDrillDown(dateStr) {
-            // Find the day data
-            const dayData = calendarData.find(d => d.date === dateStr);
-            if (!dayData) return;
-            
-            // Open the day modal (reuse existing modal logic)
-            const cell = document.querySelector(`[data-date="${dateStr}"]`);
-            if (cell) {
-                cell.click(); // Trigger existing modal logic
-            }
         }
         
-        // Switch between chart and calendar view
+        // Tooltip handling
+        window.showHeatmapTooltip = (event, dateStr, eventId, score) => {
+            const tooltip = document.getElementById('heatmap-tooltip');
+            const eventType = EVENT_TYPES.find(e => e.id === eventId);
+            const dateDisplay = new Date(dateStr).toLocaleDateString('en-US', { 
+                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' 
+            });
+            
+            tooltip.innerHTML = `
+                <div class="font-bold mb-1">${dateDisplay}</div>
+                <div class="flex items-center gap-2">
+                    <span>${eventType?.icon || ''}</span>
+                    <span>${eventType?.name || eventId}</span>
+                    <span class="font-bold ml-auto" style="color: ${EVENT_COLORS[eventId] || '#64748b'}">${score}%</span>
+                </div>
+                <div class="text-[10px] opacity-60 mt-1">Click for details</div>
+            `;
+            
+            // Position tooltip
+            const x = event.pageX + 10;
+            const y = event.pageY - 10;
+            tooltip.style.left = `${x}px`;
+            tooltip.style.top = `${y}px`;
+            tooltip.classList.add('visible');
+        };
+        
+        window.hideHeatmapTooltip = () => {
+            const tooltip = document.getElementById('heatmap-tooltip');
+            tooltip.classList.remove('visible');
+        };
+        
+        // Handle cell click - navigate to calendar and open day modal
+        window.handleHeatmapClick = (dateStr) => {
+            const clickedDate = new Date(dateStr);
+            
+            // Update calendar month to show the clicked date's month
+            currentCalendarMonth = new Date(clickedDate.getFullYear(), clickedDate.getMonth(), 1);
+            
+            // Switch to calendar view
+            switchCalendarView('calendar');
+            
+            // Re-render calendar to the correct month
+            renderCalendarMonth();
+            
+            // Highlight and open the day modal after a short delay (for DOM update)
+            setTimeout(() => {
+                const cell = document.querySelector(`[data-date="${dateStr}"]`);
+                if (cell) {
+                    cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    cell.click(); // Open day modal
+                }
+            }, 150);
+        };
+        
+        // Timeframe setter
+        window.setChartTimeframe = function(timeframe) {
+            currentChartTimeframe = timeframe;
+            renderHeatmapChart(timeframe);
+        };
+        
+        // View switcher
         window.switchCalendarView = (view) => {
             const chartView = document.getElementById('chart-view');
             const calendarView = document.getElementById('calendar-view');
@@ -2758,16 +2644,11 @@
                 tabs[0].classList.add('active');
                 tabs[1].classList.remove('active');
                 
-                // Initialize chart when switching to chart view (if not already initialized)
                 setTimeout(() => {
-                    if (!d3Chart.svg && calendarData && calendarData.length > 0) {
-                        initializeD3Chart();
-                        renderD3Chart(currentChartTimeframe);
-                    } else if (d3Chart.svg && calendarData && calendarData.length > 0) {
-                        // Re-render in case data changed
-                        renderD3Chart(currentChartTimeframe);
+                    if (calendarData && calendarData.length > 0) {
+                        renderHeatmapChart(currentChartTimeframe);
                     }
-                }, 100); // Small delay to ensure container is rendered
+                }, 100);
             } else {
                 chartView.classList.remove('active');
                 calendarView.classList.add('active');
@@ -2776,16 +2657,14 @@
             }
         };
         
-        // Update chart theme when theme toggles
+        // Update chart on theme change
         function updateChartTheme() {
-            if (d3Chart.svg) {
-                initializeD3Chart();
-                if (calendarData && calendarData.length > 0) {
-                    renderD3Chart(currentChartTimeframe);
-                }
+            if (calendarData && calendarData.length > 0) {
+                renderHeatmapChart(currentChartTimeframe);
             }
         }
         
+
         
         function renderCalendarMonth() {
             const grid = document.getElementById('calendar-grid');
@@ -2816,17 +2695,21 @@
                 grid.appendChild(emptyCell);
             }
             
+            // Get today's date string for comparison
+            const todayStr = new Date().toISOString().split('T')[0];
+            
             // Day cells
             for (let day = 1; day <= lastDay.getDate(); day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dayData = calendarData.find(d => d.date === dateStr);
+                const isToday = dateStr === todayStr;
                 
                 // Determine Day Name for mobile view
                 const currentDayOfWeekIdx = (startDayOfWeek + (day - 1)) % 7;
                 const dayName = dayNamesShort[currentDayOfWeekIdx];
                 
                 const cell = document.createElement('div');
-                cell.className = 'calendar-cell';
+                cell.className = 'calendar-cell' + (isToday ? ' today' : '');
                 cell.dataset.date = dateStr;
                 
                 if (dayData) {
