@@ -49,20 +49,9 @@ with open('raw_world_cities.json', 'r') as f:
 
 final_list = []
 
-# Manual Additions for missing cities
-MANUAL_ADDITIONS = [
-    { "name": "Dharwad", "lat": "15.4589", "lng": "75.0078", "admin1": "19", "country": "IN" },
-    { "name": "Hubballi", "lat": "15.3647", "lng": "75.1240", "admin1": "19", "country": "IN" },
-    { "name": "Rishikesh", "lat": "30.0869", "lng": "78.2676", "admin1": "39", "country": "IN" }
-]
-raw_data.extend(MANUAL_ADDITIONS)
-
 for c in raw_data:
-    if c['country'] != 'IN': continue
     
     state = ADMIN_MAP.get(c['admin1'], "Unknown State")
-    if "Tumakuru" in c['name'] or "Tumkur" in c['name']:
-         print(f"Preserving Tumkur: {c}")
 
     # Format: [Name, Lat, Lng, Tz, State]
     # Note: Original was [Name, Lat, Lng, Tz]. We Append State.
@@ -79,10 +68,6 @@ for c in raw_data:
         state
     ]
     final_list.append(entry)
-
-# Ensure Tumkur is there if missing (User requirement from previous turn)
-# Actually, if it wasn't valid in dataset, manual override handles it.
-# But let's check count.
 print(f"Processed {len(final_list)} cities.")
 
 # Write to GZIP
