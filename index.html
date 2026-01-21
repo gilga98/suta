@@ -1546,9 +1546,20 @@
                     ],
                     render: {
                         option: function(data, escape) {
-                            return `<div class="py-1 px-2">
-                                <div class="font-bold">${escape(data.n)}</div>
-                                <div class="text-xs text-gray-400 uppercase tracking-widest">${escape(data.st || '')} ${escape(data.country || '')}</div>
+                            const popText = data.population > 0 
+                                ? `Pop: ${(data.population / 1000).toFixed(0)}K` 
+                                : 'Pop: N/A';
+                            const distText = data.district ? `${escape(data.district)}` : '';
+                            const elevText = data.elevation > 0 ? ` • ${data.elevation}m` : '';
+                            
+                            return `<div class="py-2 px-2 border-b border-gray-100">
+                                <div class="font-bold text-gray-800">${escape(data.n)}</div>
+                                <div class="text-xs text-gray-500 mt-0.5">
+                                    ${escape(data.st || '')}${distText ? `, ${distText}` : ''} • ${escape(data.country || '')}
+                                </div>
+                                <div class="text-xs text-gray-400 mt-0.5">
+                                    ${popText}${elevText}
+                                </div>
                             </div>`;
                         },
                         item: function(data, escape) {
@@ -1572,9 +1583,13 @@
                                     this.addOption(currentOption);
                                 }
                                 
+                                // Sort by population (descending) to prioritize major cities
+                                const sortedResults = json.results
+                                    .sort((a, b) => (b.population || 0) - (a.population || 0));
+                                
                                 // Use a Map to deduplicate by the stable API provided ID
                                 const uniqueResults = new Map();
-                                json.results.forEach(c => {
+                                sortedResults.forEach(c => {
                                     if (!uniqueResults.has(c.id)) {
                                         uniqueResults.set(c.id, {
                                             id: String(c.id), // Use stable ID
@@ -1584,7 +1599,10 @@
                                             display_name: `${c.name}${c.admin1 ? ', ' + c.admin1 : ''}, ${c.country}`,
                                             lat: c.latitude,
                                             lng: c.longitude,
-                                            tz: c.timezone
+                                            tz: c.timezone,
+                                            population: c.population || 0,
+                                            district: c.admin2 || '',
+                                            elevation: c.elevation || 0
                                         });
                                     }
                                 });
