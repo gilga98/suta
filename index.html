@@ -101,6 +101,7 @@
         [data-theme="dark"] .rashi-label { color: #9ca3af; background: rgba(255,255,255,0.05); }
         [data-theme="dark"] .house-label { color: #ff6b8a; background: rgba(255,107,138,0.15); }
         [data-theme="dark"] .planet-glyph { background: rgba(0,0,0,0.6); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        [data-theme="dark"] .planet-glyph-compact { background: rgba(0,0,0,0.6); box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
         
         /* Dark mode legend */
         [data-theme="dark"] .legend-swatch { border-color: rgba(255,255,255,0.2) !important; }
@@ -159,6 +160,23 @@
         }
         .chart-center:hover { border-color: #e5e7eb; box-shadow: none; }
         .planet-glyph { font-weight: 600; margin: 2px; padding: 3px 6px; border-radius: 6px; font-size: 0.75rem; background: rgba(255,255,255,0.9); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .planet-glyph-compact { font-weight: 600; margin: 1px; padding: 2px 4px; border-radius: 4px; font-size: 0.65rem; background: rgba(255,255,255,0.9); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+        .planet-overflow-badge { 
+            font-weight: 700; 
+            margin: 1px; 
+            padding: 2px 5px; 
+            border-radius: 4px; 
+            font-size: 0.65rem; 
+            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%); 
+            color: white; 
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            transition: all 0.2s ease;
+        }
+        .planet-overflow-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 6px rgba(255, 56, 92, 0.4);
+        }
         .planet-Ascendant { color: #ff385c; background: rgba(255,241,242,0.95); font-weight: 700; }
         .planet-Sun { color: #f59e0b; } /* Bright Amber */
         .planet-Moon { color: #0ea5e9; } /* Sky Blue */
@@ -219,6 +237,71 @@
         
         #loader { position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 50; display: flex; justify-content: center; align-items: center; }
         #loader.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        [data-theme="dark"] #loader { background: rgba(15,15,26,0.98); }
+        
+        /* Premium Orbital Spinner Animation */
+        .orbital-spinner {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .orbital-spinner .orbit {
+            position: absolute;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            border-top-color: #ff385c;
+            animation: orbit-spin 1.5s linear infinite;
+        }
+        
+        .orbital-spinner .orbit:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 0;
+            left: 0;
+            animation-duration: 1.5s;
+        }
+        
+        .orbital-spinner .orbit:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 10px;
+            left: 10px;
+            animation-duration: 1.2s;
+            animation-direction: reverse;
+            border-top-color: #ff6b8a;
+        }
+        
+        .orbital-spinner .orbit:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 20px;
+            left: 20px;
+            animation-duration: 0.9s;
+            border-top-color: #ff8fa3;
+        }
+        
+        .orbital-spinner .core {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 56, 92, 0.6), 0 0 40px rgba(255, 56, 92, 0.3);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes orbit-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
         
         /* Custom Scrollbar for tables */
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -741,8 +824,13 @@
 
     <!-- LOADER -->
     <div id="loader">
-        <div class="flex flex-col items-center gap-4">
-            <span class="loading loading-dots loading-lg text-primary"></span>
+        <div class="flex flex-col items-center gap-6">
+            <div class="orbital-spinner">
+                <div class="orbit"></div>
+                <div class="orbit"></div>
+                <div class="orbit"></div>
+                <div class="core"></div>
+            </div>
             <div class="text-center">
                 <h3 class="text-xl font-bold tracking-tight">SŪTA</h3>
                 <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Loading Ephemeris Data</p>
@@ -2086,12 +2174,37 @@
                  `;
                  div.appendChild(infoBtn);
                  
-                 housePlanets.forEach(p => {
-                     const pSpan = document.createElement('span');
-                     pSpan.className = `planet-glyph planet-${p.name}`;
-                     pSpan.innerText = p.name.substring(0,2);
-                     div.appendChild(pSpan);
-                 });
+                 // Handle planet rendering based on count
+                 if (housePlanets.length <= 3) {
+                     // Normal rendering for 1-3 planets
+                     housePlanets.forEach(p => {
+                         const pSpan = document.createElement('span');
+                         pSpan.className = `planet-glyph planet-${p.name}`;
+                         pSpan.innerText = p.name.substring(0,2);
+                         div.appendChild(pSpan);
+                     });
+                 } else {
+                     // Compact rendering for 4+ planets
+                     // Show first 3 in compact style
+                     for (let i = 0; i < 3; i++) {
+                         const p = housePlanets[i];
+                         const pSpan = document.createElement('span');
+                         pSpan.className = `planet-glyph-compact planet-${p.name}`;
+                         pSpan.innerText = p.name.substring(0,2);
+                         div.appendChild(pSpan);
+                     }
+                     // Add overflow badge
+                     const overflowCount = housePlanets.length - 3;
+                     const badge = document.createElement('span');
+                     badge.className = 'planet-overflow-badge';
+                     badge.innerText = `+${overflowCount}`;
+                     badge.onclick = (e) => {
+                         e.stopPropagation();
+                         window.openBhavaModal(houseNum, signId, rashiInfo, housePlanets, vargaKey);
+                     };
+                     badge.title = `Click to view all ${housePlanets.length} planets`;
+                     div.appendChild(badge);
+                 }
                  container.appendChild(div);
             }
             
