@@ -1452,6 +1452,8 @@
                 today.setDate(1); // normalized to 1st
                 AppState.date = today;
                 
+                logToUI("UIState initialized. Date:", today.toISOString());
+
                 // Bind Global Actions
                 window.uiSetView = UIState.setView;
                 window.uiSetDate = UIState.setDate;
@@ -1459,16 +1461,15 @@
             },
 
             setView: (newView) => {
+                logToUI("[DEBUG] uiSetView called for:", newView);
                 console.log("[DEBUG] uiSetView called with:", newView, "Current View:", AppState.view);
-                if (AppState.view === newView) {
-                    console.log("[DEBUG] uiSetView: View unchanged, ignoring.");
-                    return;
-                }
+                // Removed Idempotent check to FIX DESYNC. Always force DOM update.
                 AppState.view = newView;
                 UIState.renderView();
             },
 
             setDate: (dateStr) => {
+                logToUI("[DEBUG] uiSetDate called for:", dateStr);
                 console.log("[DEBUG] uiSetDate called with:", dateStr);
                 if (!dateStr) return;
                 const newDate = new Date(dateStr + '-01'); // YYYY-MM
