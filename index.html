@@ -1563,6 +1563,15 @@
                             .then(json => {
                                 if (!json.results) return callback();
                                 
+                                // Clear stale options from previous searches to prevent duplicates
+                                // Preserve currently selected option if it exists
+                                const currentVal = this.getValue();
+                                const currentOption = currentVal ? this.options[currentVal] : null;
+                                this.clearOptions();
+                                if (currentOption) {
+                                    this.addOption(currentOption);
+                                }
+                                
                                 // Use a Map to deduplicate by the stable API provided ID
                                 const uniqueResults = new Map();
                                 json.results.forEach(c => {
@@ -2942,23 +2951,30 @@
             const clickedDate = new Date(dateStr);
             if(isNaN(clickedDate.getTime())) return;
             
-            // 1. Update State (Date) - Force 1st of month
-            // Construct YYYY-MM string for uiSetDate ensures consistency
+            // Batch state updates to prevent double rendering
             const y = clickedDate.getFullYear();
             const m = String(clickedDate.getMonth() + 1).padStart(2, '0');
-            UIState.setDate(`${y}-${m}`);
+            const newDate = new Date(`${y}-${m}-01`);
+            newDate.setDate(1); // Normalize to 1st of month
             
-            // 2. Switch View (will trigger render if needed)
-            UIState.setView('calendar');
+            // Update state directly without triggering individual renders
+            AppState.date = newDate;
+            AppState.view = 'calendar';
             
-            // 3. Highlight/Open Day (Delayed)
-            setTimeout(() => {
-                const cell = document.querySelector(`[data-date="${dateStr}"]`);
-                if (cell) {
-                    cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    cell.click(); // Open day modal
-                }
-            }, 300); // Increased delay slightly to ensure render complete
+            // Single render for both state changes
+            UIState.renderView();
+            
+            // Use requestAnimationFrame to wait for DOM update cycle completion
+            // Double RAF ensures layout/paint are complete before clicking
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const cell = document.querySelector(`[data-date="${dateStr}"]`);
+                    if (cell) {
+                        cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        cell.click(); // Open day modal
+                    }
+                });
+            });
         };
         
         // Timeframe setter
