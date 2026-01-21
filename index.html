@@ -2964,10 +2964,19 @@
             tooltip.classList.remove('visible');
         };
         
+        // Guard flag to prevent recursive calls
+        let isHandlingHeatmapClick = false;
+        
         // Handle cell click - navigate to calendar and open day modal
         window.handleHeatmapClick = (dateStr) => {
+            // Prevent recursive calls
+            if (isHandlingHeatmapClick) return;
+            
             const clickedDate = new Date(dateStr);
             if(isNaN(clickedDate.getTime())) return;
+            
+            // Set guard flag
+            isHandlingHeatmapClick = true;
             
             // Batch state updates to prevent double rendering
             const y = clickedDate.getFullYear();
@@ -2983,14 +2992,31 @@
             UIState.renderView();
             
             // Use requestAnimationFrame to wait for DOM update cycle completion
-            // Double RAF ensures layout/paint are complete before clicking
+            // Double RAF ensures layout/paint are complete before opening modal
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    const cell = document.querySelector(`[data-date="${dateStr}"]`);
-                    if (cell) {
-                        cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        cell.click(); // Open day modal
+                    // Find the calendar data for this date
+                    const dayData = calendarData.find(d => d.date === dateStr);
+                    if (dayData) {
+                        // Get day name
+                        const date = new Date(dateStr);
+                        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                        const dayName = dayNames[date.getDay()];
+                        
+                        // Open modal directly instead of clicking the cell
+                        openDayModal(dayData, dayName);
+                        
+                        // Scroll the cell into view
+                        const cell = document.querySelector(`.calendar-cell[data-date="${dateStr}"]`);
+                        if (cell) {
+                            cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
                     }
+                    
+                    // Reset guard flag after operation completes
+                    setTimeout(() => {
+                        isHandlingHeatmapClick = false;
+                    }, 500);
                 });
             });
         };

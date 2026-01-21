@@ -132,10 +132,10 @@ class VedicAstroEngine {
         
         // Manual UT calculation
         let totalHour = h + (min / 60.0) + (s / 3600.0);
-        let ut = totalHour - tzOffset;
+        let utHour = totalHour - tzOffset;
         
         const utcDate = new Date(Date.UTC(y, m - 1, d, 0, 0, 0));
-        const msToAdd = ut * 3600 * 1000;
+        const msToAdd = utHour * 3600 * 1000;
         utcDate.setTime(utcDate.getTime() + msToAdd);
         
         const year = utcDate.getUTCFullYear();
