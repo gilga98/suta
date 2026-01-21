@@ -1562,17 +1562,24 @@
                             .then(response => response.json())
                             .then(json => {
                                 if (!json.results) return callback();
-                                const results = json.results.map((c, i) => ({
-                                    id: `${c.id}-${i}`,
-                                    n: c.name,
-                                    st: c.admin1,
-                                    country: c.country,
-                                    display_name: `${c.name}${c.admin1 ? ', ' + c.admin1 : ''}, ${c.country}`,
-                                    lat: c.latitude,
-                                    lng: c.longitude,
-                                    tz: c.timezone
-                                }));
-                                callback(results);
+                                
+                                // Use a Map to deduplicate by the stable API provided ID
+                                const uniqueResults = new Map();
+                                json.results.forEach(c => {
+                                    if (!uniqueResults.has(c.id)) {
+                                        uniqueResults.set(c.id, {
+                                            id: String(c.id), // Use stable ID
+                                            n: c.name,
+                                            st: c.admin1,
+                                            country: c.country,
+                                            display_name: `${c.name}${c.admin1 ? ', ' + c.admin1 : ''}, ${c.country}`,
+                                            lat: c.latitude,
+                                            lng: c.longitude,
+                                            tz: c.timezone
+                                        });
+                                    }
+                                });
+                                callback(Array.from(uniqueResults.values()));
                             }).catch(() => {
                                 callback();
                             });
