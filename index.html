@@ -1645,6 +1645,7 @@
                     const dashas = jyotishTools.calculateVimshottari(moonObj.longitude, dateStr);
                     
                     // KP Dashas (Using KP Moon)
+                    const kpMoon = kpResult.planets.find(p => p.name === "Moon");
                     const kpDashas = jyotishTools.calculateVimshottari(kpMoon.longitude, dateStr);
 
                     const kpData = {
@@ -1666,7 +1667,7 @@
                     
                     // --- CALENDAR DATA STORAGE ---
                     // Use KP Planets for Calendar/Events/Dasha (KP Timings)
-                    const kpMoon = kpResult.planets.find(p => p.name === "Moon");
+                    // kpMoon is already defined above
 
                     calendarBirthDate = dateStr;
                     calendarMoonLong = kpMoon.longitude; // KP Moon Longitude
