@@ -1006,7 +1006,13 @@
                          <h3 class="font-bold text-xl mb-6 text-gray-800 border-b pb-2">Dasha & Strength</h3>
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                              <div>
-                                 <h4 class="font-bold text-lg mb-4 text-gray-600">Vimshottari Dasha</h4>
+                                 <div class="flex justify-between items-center mb-4">
+                                     <h4 class="font-bold text-lg text-gray-600">Vimshottari Dasha</h4>
+                                     <div class="tabs tabs-boxed p-1 bg-gray-100 rounded-lg">
+                                         <a class="tab tab-xs tab-active rounded-md transition-all" onclick="switchDashaTab('trad', this)" id="dasha-tab-trad">Trad</a>
+                                         <a class="tab tab-xs rounded-md transition-all" onclick="switchDashaTab('kp', this)" id="dasha-tab-kp">KP</a>
+                                     </div>
+                                 </div>
                                  <div class="overflow-x-auto h-96 custom-scroll border border-gray-100 rounded-lg">
                                     <table class="table table-pin-rows table-zebra w-full">
                                         <thead><tr class="bg-gray-50 text-gray-500"><th>Lord</th><th>Start</th><th>End</th><th>Dur</th></tr></thead>
@@ -1637,6 +1643,9 @@
 
                     const moonObj = d1Result.planets.find(p => p.name === "Moon");
                     const dashas = jyotishTools.calculateVimshottari(moonObj.longitude, dateStr);
+                    
+                    // KP Dashas (Using KP Moon)
+                    const kpDashas = jyotishTools.calculateVimshottari(kpMoon.longitude, dateStr);
 
                     const kpData = {
                         planets: kpResult.planets.map(p => ({ ...p, kp: jyotishTools.getKPLords(p.longitude) })),
@@ -1653,7 +1662,7 @@
                     const avkahada = jyotishTools.getAvkahada(moonObj.longitude);
                     const ashtakvarga = jyotishTools.calculateAshtakvarga(d1Result.planets);
 
-                    renderDashboard(d1Result, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga);
+                    renderDashboard(d1Result, dashas, kpDashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga);
                     
                     // --- CALENDAR DATA STORAGE ---
                     // Use KP Planets for Calendar/Events/Dasha (KP Timings)
@@ -1744,7 +1753,7 @@
             }
         }
 
-        function renderDashboard(data, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga) {
+        function renderDashboard(data, dashas, kpDashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga) {
             // Safe fix: Check if element exists before setting.
             const ayaEl = document.getElementById('val-ayanamsa');
             if(ayaEl) ayaEl.innerText = astroEngine.decimalToDMS(data.meta.ayanamsaValue);
@@ -1842,10 +1851,21 @@
                 </tr>`;
             });
 
-            // DASHAS - Store globally for deep dive
-            window.calculatedDashas = dashas;
-            const dashaBody = document.getElementById('dasha-body');
-            dashaBody.innerHTML = '';
+            // DASHAS - Store globally for switching
+            window.dashaSets = {
+                trad: dashas,
+                kp: kpDashas
+            };
+            window.activeDashaView = 'trad'; // Default
+
+            renderDashaTable('trad');
+
+                             /* REMOVED OLD LOOP - MOVED TO renderDashaTable */
+             /*
+                const dashaBody = document.getElementById('dasha-body');
+                dashaBody.innerHTML = '';
+             */
+             /*
             dashas.forEach((d, idx) => {
                 // Check if current date is within this Mahadasha
                 const now = new Date();
@@ -1867,6 +1887,7 @@
                     </td>
                 </tr>`;
             });
+            */
 
             // SPECIALTY
             document.getElementById('avkahada-body').innerHTML = `
@@ -1896,7 +1917,7 @@
                 doshaContainer.innerHTML += `<div class="badge badge-warning badge-outline gap-2 p-3 font-medium">Kalsarpa: ${doshas.kalsarpa.type}</div>`;
             }
 
-            renderDataExport(data, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga);
+            renderDataExport(data, dashas, kpDashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga);
         }
         
         function setText(id, val) {
@@ -2083,7 +2104,7 @@
         
         let exportData = { json: "", verbal: "" };
 
-        function renderDataExport(data, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga) {
+        function renderDataExport(data, dashas, kpDashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga) {
             
             // Construct full JSON object (clean clone or subset if circular refs exist - usually fine here)
             const fullObj = {
@@ -2097,7 +2118,10 @@
                 panchanga: data.panchanga,
                 planets: data.planets,
                 kp: kpData,
-                dashas: dashas,
+                dashas: {
+                    traditional: dashas,
+                    kp: kpDashas
+                },
                 shadbala: shadbala,
                 jaimini: jaimini,
                 doshas: doshas,
@@ -2152,8 +2176,13 @@
             txt += "\n";
 
             // Dasha
-            txt += `### Vimshottari Dasha Rules\n`;
-            D.dashas.forEach(dasha => {
+            txt += `### Vimshottari Dasha\n`;
+            txt += `**Traditional (Selected Ayanamsa):**\n`;
+            D.dashas.traditional.forEach(dasha => {
+                txt += `- **${dasha.lord} Dasha:** From ${new Date(dasha.start).toLocaleDateString()} to ${new Date(dasha.end).toLocaleDateString()} (${dasha.duration.toFixed(2)} Years)\n`;
+            });
+            txt += `\n**KP System (KP Ayanamsa):**\n`;
+            D.dashas.kp.forEach(dasha => {
                 txt += `- **${dasha.lord} Dasha:** From ${new Date(dasha.start).toLocaleDateString()} to ${new Date(dasha.end).toLocaleDateString()} (${dasha.duration.toFixed(2)} Years)\n`;
             });
             txt += "\n";
@@ -2313,7 +2342,10 @@
                 arrow.style.transform = 'rotate(90deg)';
                 
                 // Calculate Antardasha for this Mahadasha
-                const mahadasha = window.calculatedDashas[idx];
+                // USE CURRENT ACTIVE SET
+                const currentSet = window.dashaSets[window.activeDashaView];
+                const mahadasha = currentSet[idx];
+
                 const antardashas = calculateAntardasha(mahadasha);
                 
                 let html = '<table class="table table-xs w-full">';
@@ -2339,6 +2371,45 @@
                 expandRow.classList.add('hidden');
                 arrow.style.transform = 'rotate(0deg)';
             }
+        };
+
+        window.switchDashaTab = (viewKey, tabEl) => {
+            window.activeDashaView = viewKey;
+            
+            // Update Tabs
+            document.querySelectorAll('#dasha-tab-trad, #dasha-tab-kp').forEach(el => el.classList.remove('tab-active'));
+            tabEl.classList.add('tab-active');
+
+            // Render
+            renderDashaTable(viewKey);
+        };
+
+        window.renderDashaTable = (viewKey) => {
+            const dashas = window.dashaSets[viewKey];
+            const dashaBody = document.getElementById('dasha-body');
+            dashaBody.innerHTML = '';
+
+            dashas.forEach((d, idx) => {
+                // Check if current date is within this Mahadasha
+                const now = new Date();
+                const isCurrent = now >= d.start && now <= d.end;
+                const currentClass = isCurrent ? 'bg-primary/10' : '';
+                
+                dashaBody.innerHTML += `<tr class="dasha-row cursor-pointer hover:bg-gray-100 ${currentClass}" data-dasha-idx="${idx}" onclick="toggleDashaExpand(${idx})">
+                    <td class="font-bold flex items-center gap-1">
+                        <svg class="h-3 w-3 transition-transform dasha-arrow" id="dasha-arrow-${idx}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        ${d.lord}
+                    </td>
+                    <td class="font-mono text-xs">${d.start.toLocaleDateString()}</td>
+                    <td class="font-mono text-xs">${d.end.toLocaleDateString()}</td>
+                    <td class="text-gray-400">${d.duration.toFixed(1)}y</td>
+                </tr>
+                <tr class="dasha-expand hidden" id="dasha-expand-${idx}">
+                    <td colspan="4" class="p-0">
+                        <div class="pl-6 py-2 bg-gray-50 border-l-2 border-primary" id="antardasha-container-${idx}"></div>
+                    </td>
+                </tr>`;
+            });
         };
 
         /* -----------------------------------------------------
@@ -2879,25 +2950,25 @@
         // Handle cell click - navigate to calendar and open day modal
         window.handleHeatmapClick = (dateStr) => {
             const clickedDate = new Date(dateStr);
+            if(isNaN(clickedDate.getTime())) return;
             
-            // Update calendar month to show the clicked date's month
-            const newDate = new Date(clickedDate.getFullYear(), clickedDate.getMonth(), 1);
-            AppState.date = newDate;
+            // 1. Update State (Date) - Force 1st of month
+            // Construct YYYY-MM string for uiSetDate ensures consistency
+            const y = clickedDate.getFullYear();
+            const m = String(clickedDate.getMonth() + 1).padStart(2, '0');
+            UIState.setDate(`${y}-${m}`);
             
-            // Switch to calendar view using State
+            // 2. Switch View (will trigger render if needed)
             UIState.setView('calendar');
             
-            // Re-render calendar to the correct month
-            renderCalendarMonth();
-            
-            // Highlight and open the day modal after a short delay (for DOM update)
+            // 3. Highlight/Open Day (Delayed)
             setTimeout(() => {
                 const cell = document.querySelector(`[data-date="${dateStr}"]`);
                 if (cell) {
                     cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     cell.click(); // Open day modal
                 }
-            }, 150);
+            }, 300); // Increased delay slightly to ensure render complete
         };
         
         // Timeframe setter
@@ -2942,7 +3013,8 @@
             // Sync date picker value
             const pickerVal = `${year}-${String(month + 1).padStart(2, '0')}`;
             const picker = document.getElementById('calendar-jump-picker');
-            if(picker && picker.value !== pickerVal) {
+            // Prevent race condition: Do not update if user is currently interacting with it
+            if(picker && picker !== document.activeElement && picker.value !== pickerVal) {
                 picker.value = pickerVal;
             }
             
