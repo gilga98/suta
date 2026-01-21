@@ -1452,8 +1452,6 @@
                 today.setDate(1); // normalized to 1st
                 AppState.date = today;
                 
-                logToUI("UIState initialized. Date:", today.toISOString());
-
                 // Bind Global Actions
                 window.uiSetView = UIState.setView;
                 window.uiSetDate = UIState.setDate;
@@ -1461,16 +1459,12 @@
             },
 
             setView: (newView) => {
-                logToUI("[DEBUG] uiSetView called for:", newView);
-                console.log("[DEBUG] uiSetView called with:", newView, "Current View:", AppState.view);
                 // Removed Idempotent check to FIX DESYNC. Always force DOM update.
                 AppState.view = newView;
                 UIState.renderView();
             },
 
             setDate: (dateStr) => {
-                logToUI("[DEBUG] uiSetDate called for:", dateStr);
-                console.log("[DEBUG] uiSetDate called with:", dateStr);
                 if (!dateStr) return;
                 const newDate = new Date(dateStr + '-01'); // YYYY-MM
                 if (isNaN(newDate.getTime())) return;
@@ -1479,19 +1473,13 @@
                 newDate.setDate(1);
                 
                 // Idempotent check (prevent race condition loop)
-                console.log("[DEBUG] Current AppState.date:", AppState.date.toISOString(), "New Date:", newDate.toISOString());
-                if (AppState.date.getTime() === newDate.getTime()) {
-                    console.log("[DEBUG] uiSetDate: Date unchanged, ignoring.");
-                    return;
-                }
+                if (AppState.date.getTime() === newDate.getTime()) return;
 
-                console.log("[DEBUG] uiSetDate: Date changed. Updating AppState and rendering.");
                 AppState.date = newDate;
                 UIState.renderCalendar();
             },
 
             changeMonth: (delta) => {
-                console.log("[DEBUG] uiChangeMonth called with delta:", delta);
                 const newDate = new Date(AppState.date);
                 newDate.setMonth(newDate.getMonth() + delta);
                 AppState.date = newDate;
@@ -2962,7 +2950,6 @@
         
         // Handle cell click - navigate to calendar and open day modal
         window.handleHeatmapClick = (dateStr) => {
-            console.log("[DEBUG] handleHeatmapClick called for:", dateStr);
             const clickedDate = new Date(dateStr);
             if(isNaN(clickedDate.getTime())) return;
             
@@ -2970,22 +2957,17 @@
             // Construct YYYY-MM string for uiSetDate ensures consistency
             const y = clickedDate.getFullYear();
             const m = String(clickedDate.getMonth() + 1).padStart(2, '0');
-            console.log("[DEBUG] handleHeatmapClick: Calling uiSetDate with", `${y}-${m}`);
             UIState.setDate(`${y}-${m}`);
             
             // 2. Switch View (will trigger render if needed)
-            console.log("[DEBUG] handleHeatmapClick: Calling uiSetView('calendar')");
             UIState.setView('calendar');
             
             // 3. Highlight/Open Day (Delayed)
             setTimeout(() => {
-                console.log("[DEBUG] handleHeatmapClick async: Scrolling to cell");
                 const cell = document.querySelector(`[data-date="${dateStr}"]`);
                 if (cell) {
                     cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     cell.click(); // Open day modal
-                } else {
-                    console.warn("[DEBUG] handleHeatmapClick: Cell not found for scrolling");
                 }
             }, 300); // Increased delay slightly to ensure render complete
         };
@@ -3034,10 +3016,7 @@
             const picker = document.getElementById('calendar-jump-picker');
             // Prevent race condition: Do not update if user is currently interacting with it
             if(picker && picker !== document.activeElement && picker.value !== pickerVal) {
-                console.log("[DEBUG] renderCalendarMonth: Updating picker value to", pickerVal);
                 picker.value = pickerVal;
-            } else {
-                 console.log("[DEBUG] renderCalendarMonth: Skipping picker update. Focused?", picker === document.activeElement, "Value Match?", picker && picker.value === pickerVal);
             }
             
             // Empty cells before first day
