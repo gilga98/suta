@@ -1145,10 +1145,10 @@
                      
                      <!-- Chart/Calendar View Toggle -->
                      <div class="chart-calendar-tabs">
-                         <button class="chart-tab active" onclick="switchCalendarView('chart')">
+                         <button id="tab-btn-chart" class="chart-tab active" onclick="uiSetView('chart')">
                              📊 Chart View
                          </button>
-                         <button class="chart-tab" onclick="switchCalendarView('calendar')">
+                         <button id="tab-btn-calendar" class="chart-tab" onclick="uiSetView('calendar')">
                              📅 Calendar View
                          </button>
                      </div>
@@ -1219,7 +1219,7 @@
 
                      <!-- Month Navigation -->
                       <div class="month-nav flex items-center justify-between mb-4 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
-                          <button onclick="changeCalendarMonth(-1)" class="btn btn-ghost btn-sm btn-circle hover:bg-white hover:shadow-sm">
+                          <button onclick="uiChangeMonth(-1)" class="btn btn-ghost btn-sm btn-circle hover:bg-white hover:shadow-sm">
                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                           </button>
                           
@@ -1231,10 +1231,10 @@
                               <!-- Invisible Overlay Input -->
                               <input type="month" id="calendar-jump-picker" 
                                      class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                     onchange="jumpToDate(this.value)">
+                                     onchange="uiSetDate(this.value)">
                           </div>
 
-                          <button onclick="changeCalendarMonth(1)" class="btn btn-ghost btn-sm btn-circle hover:bg-white hover:shadow-sm">
+                          <button onclick="uiChangeMonth(1)" class="btn btn-ghost btn-sm btn-circle hover:bg-white hover:shadow-sm">
                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                           </button>
                       </div>
@@ -1431,14 +1431,99 @@
         let calendarNatalData = null;    // Natal chart data for calendar
         let calendarMoonLong = 0;
         let calendarBirthDate = null;
-        let currentCalendarMonth = new Date(); // Initialize directly
         let activeEventTypes = new Set(['marriage', 'career', 'finance', 'education']); // Default selections
+
+        // --- UI STATE MANAGEMENT (Clean Slate) ---
+        const AppState = {
+            view: 'chart', // 'chart' | 'calendar'
+            date: new Date(), // Current focused month
+        };
+
+        const UIState = {
+            init: () => {
+                // Set initial date to today
+                const today = new Date();
+                today.setDate(1); // normalized to 1st
+                AppState.date = today;
+                
+                // Bind Global Actions
+                window.uiSetView = UIState.setView;
+                window.uiSetDate = UIState.setDate;
+                window.uiChangeMonth = UIState.changeMonth;
+            },
+
+            setView: (newView) => {
+                if (AppState.view === newView) return; // Idempotent check
+                AppState.view = newView;
+                UIState.renderView();
+            },
+
+            setDate: (dateStr) => {
+                if (!dateStr) return;
+                const newDate = new Date(dateStr + '-01'); // YYYY-MM
+                if (isNaN(newDate.getTime())) return;
+
+                // Normalize to 1st of month for comparison
+                newDate.setDate(1);
+                
+                // Idempotent check (prevent race condition loop)
+                if (AppState.date.getTime() === newDate.getTime()) return;
+
+                AppState.date = newDate;
+                UIState.renderCalendar();
+            },
+
+            changeMonth: (delta) => {
+                const newDate = new Date(AppState.date);
+                newDate.setMonth(newDate.getMonth() + delta);
+                AppState.date = newDate;
+                UIState.renderCalendar();
+            },
+
+            renderView: () => {
+                const chartView = document.getElementById('chart-view');
+                const calendarView = document.getElementById('calendar-view');
+                const btnChart = document.getElementById('tab-btn-chart');
+                const btnCalendar = document.getElementById('tab-btn-calendar');
+
+                if (AppState.view === 'chart') {
+                    if(chartView) chartView.classList.add('active');
+                    if(calendarView) calendarView.classList.remove('active');
+                    if(btnChart) btnChart.classList.add('active');
+                    if(btnCalendar) btnCalendar.classList.remove('active');
+
+                    // Refresh chart if needed
+                    setTimeout(() => {
+                        if (calendarData && calendarData.length > 0) {
+                            renderHeatmapChart(currentChartTimeframe);
+                        }
+                    }, 50);
+                } else {
+                    if(chartView) chartView.classList.remove('active');
+                    if(calendarView) calendarView.classList.add('active');
+                    if(btnChart) btnChart.classList.remove('active');
+                    if(btnCalendar) btnCalendar.classList.add('active');
+                    
+                    // Refresh calendar
+                    UIState.renderCalendar();
+                }
+            },
+
+            renderCalendar: () => {
+                // Gateway to existing render logic logic
+                // Ensure the global 'currentCalendarMonth' logic is replaced by AppState.date usage
+                // But since 'renderCalendarMonth' uses the global, we will temporarily sync them OR refactor renderCalendarMonth
+                // REFACTOR: We will pass AppState.date to renderCalendarMonth or make renderCalendarMonth use AppState.date
+                renderCalendarMonth(); 
+            }
+        };
 
         window.onload = async () => {
             try {
                 const loader = document.getElementById('loader');
 
-                // Initialize Engine
+                // Init State
+                UIState.init();
                 await astroEngine.init();
                 
                 // Initialize TomSelect (Empty first)
@@ -2474,24 +2559,13 @@
             if (pill) pill.classList.toggle('active');
             // Re-render calendar AND chart if data exists
             if (calendarData.length > 0) {
-                renderCalendarMonth();
+                UIState.renderCalendar();
                 // Also update heatmap chart
                 renderHeatmapChart(currentChartTimeframe);
             }
         };
 
-        window.jumpToDate = (val) => {
-            if(!val) return;
-            const targetDate = new Date(val + '-01'); // YYYY-MM
-            if(isNaN(targetDate.getTime())) return;
-            
-            // Check bounds
-            // Assuming we have generated +/- 5 years. 
-            // If out of bounds, maybe we should regenerate? For now, just clamp or nav.
-            
-            currentCalendarMonth = targetDate;
-            renderCalendarMonth();
-        };
+
         
         window.generateEventCalendar = () => {
             if (!calendarNatalData || !calendarBirthDate) {
@@ -2527,10 +2601,11 @@
             );
             
             // Default to TODAY, not 5 years ago
-            currentCalendarMonth = new Date(today);
-            // Ensure we are at the first of the month
-            currentCalendarMonth.setDate(1);
-            renderCalendarMonth();
+            const now = new Date();
+            now.setDate(1);
+            AppState.date = now;
+            
+            UIState.renderCalendar();
             
             // Show current day's dasha
             const todayData = calendarData.find(d => d.date === new Date().toISOString().split('T')[0]);
@@ -2806,10 +2881,11 @@
             const clickedDate = new Date(dateStr);
             
             // Update calendar month to show the clicked date's month
-            currentCalendarMonth = new Date(clickedDate.getFullYear(), clickedDate.getMonth(), 1);
+            const newDate = new Date(clickedDate.getFullYear(), clickedDate.getMonth(), 1);
+            AppState.date = newDate;
             
-            // Switch to calendar view
-            switchCalendarView('calendar');
+            // Switch to calendar view using State
+            UIState.setView('calendar');
             
             // Re-render calendar to the correct month
             renderCalendarMonth();
@@ -2830,30 +2906,7 @@
             renderHeatmapChart(timeframe);
         };
         
-        // View switcher
-        window.switchCalendarView = (view) => {
-            const chartView = document.getElementById('chart-view');
-            const calendarView = document.getElementById('calendar-view');
-            const tabs = document.querySelectorAll('.chart-tab');
-            
-            if (view === 'chart') {
-                chartView.classList.add('active');
-                calendarView.classList.remove('active');
-                tabs[0].classList.add('active');
-                tabs[1].classList.remove('active');
-                
-                setTimeout(() => {
-                    if (calendarData && calendarData.length > 0) {
-                        renderHeatmapChart(currentChartTimeframe);
-                    }
-                }, 100);
-            } else {
-                chartView.classList.remove('active');
-                calendarView.classList.add('active');
-                tabs[0].classList.remove('active');
-                tabs[1].classList.add('active');
-            }
-        };
+
         
         // Update chart on theme change
         function updateChartTheme() {
@@ -2874,8 +2927,8 @@
             headers.forEach(h => grid.appendChild(h));
             
             // Get month boundaries
-            const year = currentCalendarMonth.getFullYear();
-            const month = currentCalendarMonth.getMonth();
+            const year = AppState.date.getFullYear();
+            const month = AppState.date.getMonth();
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const startDayOfWeek = firstDay.getDay(); // 0 = Sun
@@ -2956,10 +3009,7 @@
             }
         }
         
-        window.changeCalendarMonth = (delta) => {
-            currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + delta);
-            renderCalendarMonth();
-        };
+
         
         function renderCurrentDasha(dasha) {
             const container = document.getElementById('current-dasha-lords');
