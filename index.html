@@ -1536,8 +1536,9 @@
                         houseSystem: 'P' 
                     });
                     
+                    // FORCE KP AYANAMSA (Mode 5) for KP Calculations
                     const kpResult = astroEngine.calculate(dateStr, timeStr, tzOffset, lat, lng, {
-                         ayanamsaMode: ayaMode,
+                         ayanamsaMode: 5, // KP New / Krishnamurti
                          calcModeFlag: calcMode,
                          houseSystem: 'P'
                     });
@@ -1570,10 +1571,13 @@
                     renderDashboard(d1Result, dashas, kpData, shadbala, jaimini, doshas, avkahada, ashtakvarga);
                     
                     // --- CALENDAR DATA STORAGE ---
+                    // Use KP Planets for Calendar/Events/Dasha (KP Timings)
+                    const kpMoon = kpResult.planets.find(p => p.name === "Moon");
+
                     calendarBirthDate = dateStr;
-                    calendarMoonLong = moonObj.longitude;
+                    calendarMoonLong = kpMoon.longitude; // KP Moon Longitude
                     calendarNatalData = {
-                        planets: d1Result.planets,
+                        planets: kpResult.planets, // Use KP positions for Event Engine
                         kpCusps: kpData.cusps,
                         cuspLongitudes: kpResult.houses.houses.slice(1) // Extract raw longitudes (skip index 0)
                     };
