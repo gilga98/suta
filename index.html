@@ -15,10 +15,11 @@
     <!-- Tom Select -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-    <!-- Pako (GZIP Decompression) -->
-    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
     <!-- D3.js for Interactive Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Luxon for Timezone Handling -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -1532,21 +1533,49 @@
                 UIState.init();
                 await astroEngine.init();
                 
-                // Initialize TomSelect (Empty first)
+                // Initialize TomSelect with Remote Data (Open-Meteo)
                 tsControl = new TomSelect("#citySelect", {
                     valueField: 'id',
-                    labelField: 'n',
-                    searchField: ['n', 'st'], // Search both name and state
-                    maxOptions: 50,
+                    labelField: 'display_name',
+                    searchField: ['display_name'],
+                    maxOptions: 10,
                     create: false,
                     placeholder: "Search City (e.g. Mumbai, New York)",
+                    optgroups: [
+                        {value: 'city', label: 'Cities'}
+                    ],
                     render: {
                         option: function(data, escape) {
-                            return '<div class="flex justify-between items-center py-1"><span>' + escape(data.n) + '</span> <span class="text-xs text-gray-400 uppercase tracking-widest ml-2">' + escape(data.st) + '</span></div>';
+                            return `<div class="py-1 px-2">
+                                <div class="font-bold">${escape(data.n)}</div>
+                                <div class="text-xs text-gray-400 uppercase tracking-widest">${escape(data.st || '')} ${escape(data.country || '')}</div>
+                            </div>`;
                         },
                         item: function(data, escape) {
-                            return '<div>' + escape(data.n) + ', ' + escape(data.st) + '</div>';
+                            return `<div>${escape(data.display_name)}</div>`;
                         }
+                    },
+                    load: function(query, callback) {
+                        if (!query.length) return callback();
+                        const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`;
+                        fetch(url)
+                            .then(response => response.json())
+                            .then(json => {
+                                if (!json.results) return callback();
+                                const results = json.results.map((c, i) => ({
+                                    id: `${c.id}-${i}`,
+                                    n: c.name,
+                                    st: c.admin1,
+                                    country: c.country,
+                                    display_name: `${c.name}${c.admin1 ? ', ' + c.admin1 : ''}, ${c.country}`,
+                                    lat: c.latitude,
+                                    lng: c.longitude,
+                                    tz: c.timezone
+                                }));
+                                callback(results);
+                            }).catch(() => {
+                                callback();
+                            });
                     },
                     onChange: (value) => {
                         if(value && tsControl.options[value]) {
@@ -1558,41 +1587,14 @@
                         }
                     }
                 });
-                tsControl.disable(); // Disable until data loads
 
-                // Load City Data
-                // Fetch GZIPPED file to save bandwidth
-                // Format: [Name, Lat, Lng, Tz, State]
-                const res = await fetch('./indian_locations_state.json.gz');
-                const buffer = await res.arrayBuffer();
-                
-                // Decompress
-                const text = pako.ungzip(buffer, { to: 'string' });
-                const rawData = JSON.parse(text);
-                
-                // Optimize mapping 
-                // Filter garbage (starts with digit or too short)
-                const options = rawData
-                    .filter(d => !/^\d/.test(d[0]) && d[0].length > 2)
-                    .map((d, i) => ({
-                        id: i,
-                        n: d[0],
-                        lat: d[1],
-                        lng: d[2],
-                        tz: d[3],
-                        st: d[4] // State index
-                    }));
-                
-                tsControl.addOptions(options);
-                tsControl.enable();
-                
                 loader.classList.add('hidden');
                 document.getElementById('calcBtn').disabled = false;
 
             } catch (e) {
                 console.error(e);
                 alert("Init Failed: " + e.message);
-                document.getElementById('loader').classList.add('hidden'); // Ensure loader hides on error
+                document.getElementById('loader').classList.add('hidden');
             }
         };
 
@@ -1720,36 +1722,16 @@
         
         function getOffsetFromIANA(timeZone, dateStr, timeStr) {
             try {
-                // "Asia/Kolkata", "2000-01-01", "12:00"
-                // Construct date string for Intl
-                const dt = new Date(`${dateStr}T${timeStr}`);
-                
-                // Get timezone specific string
-                // options: timeZoneName: 'longOffset' returns "GMT+05:30"
-                const str = dt.toLocaleString('en-US', { timeZone: timeZone, timeZoneName: 'longOffset' });
-                
-                // Check if result has GMT or UTC
-                const match = str.match(/GMT([+-]\d{2}):(\d{2})/);
-                if (match) {
-                    const hours = parseInt(match[1]);
-                    const minutes = parseInt(match[2]);
-                    const sign = hours < 0 ? -1 : 1;
-                    // Note: match[1] includes sign. parseInt("-05") is -5.
-                    // If hours is -5, we subtract minutes? No. -5:30 means -(5 + 30/60).
-                    // Logic: Absolute hours + minutes/60, then apply sign.
-                    // Actually, if string is GMT-05:30. hours = -5. minutes = 30.
-                    // We want -5.5.
-                    // Math.abs(hours) + minutes/60 -> 5.5. Then apply sign.
-                    const offset = (Math.abs(hours) + (minutes / 60)) * (hours >= 0 ? 1 : -1);
-                    return offset;
+                // Use Luxon for accurate historical offset
+                const dt = luxon.DateTime.fromISO(`${dateStr}T${timeStr}`, { zone: timeZone });
+                if (!dt.isValid) {
+                    console.warn("Luxon invalid date/zone, falling back to 5.5");
+                    return 5.5;
                 }
-                
-                if (str.includes("GMT") && !str.includes("GMT+")) return 0; // GMT+00:00 sometimes shows as GMT
-
-                console.warn("Could not parse offset from", str, "Defaulting to 5.5");
-                return 5.5; // Fallback
+                // Luxon returns offset in minutes. Convert to hours.
+                return dt.offset / 60;
             } catch (e) {
-                console.error("Timezone Parse Error", e);
+                console.error("Timezone Parse Error via Luxon", e);
                 return 5.5; 
             }
         }
