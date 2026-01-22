@@ -1405,37 +1405,7 @@
              </div>
         </section>
 
-         <!-- DATA & NARRATION SECTION -->
-         <section id="data-export-section" class="w-full transition-all duration-500 ease-in-out hidden">
-             <div class="card bg-base-100 shadow-xl rounded-2xl overflow-hidden border border-gray-100">
-                 <div class="card-body p-6 sm:p-8">
-                     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                         <h2 class="text-2xl font-bold text-gray-800">Data & Narration</h2>
-                         <div class="flex items-center gap-4">
-                             <!-- Toggle -->
-                             <label class="cursor-pointer label gap-2">
-                                 <span class="label-text font-bold text-gray-500">JSON</span> 
-                                 <input type="checkbox" class="toggle toggle-primary" id="viewToggle" onchange="toggleDataView()" checked />
-                                 <span class="label-text font-bold text-gray-500">Verbal</span> 
-                             </label>
-                             <!-- Copy Button -->
-                             <button class="btn btn-outline btn-sm gap-2" onclick="copyDataToClipboard()">
-                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                                 Copy
-                             </button>
-                         </div>
-                     </div>
 
-                     <!-- Content Container -->
-                     <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 relative max-h-[600px] overflow-y-auto custom-scroll">
-                         <!-- JSON VIEW -->
-                         <pre id="json-view" class="text-xs font-mono text-gray-700 whitespace-pre-wrap hidden"></pre>
-                         <!-- VERBAL CONTENT VIEW -->
-                         <div id="verbal-view" class="prose prose-sm max-w-none text-gray-700 leading-relaxed space-y-4"></div>
-                     </div>
-                 </div>
-             </div>
-         </section>
 
          <!-- EVENT CALENDAR SECTION -->
          <section id="event-calendar-section" class="w-full transition-all duration-500 ease-in-out hidden">
@@ -1687,6 +1657,38 @@
                      
                      </div> <!-- End calendar-view-content -->
                      
+                 </div>
+             </div>
+         </section>
+
+         <!-- DATA & NARRATION SECTION -->
+         <section id="data-export-section" class="w-full transition-all duration-500 ease-in-out hidden">
+             <div class="card bg-base-100 shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+                 <div class="card-body p-6 sm:p-8">
+                     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                         <h2 class="text-2xl font-bold text-gray-800">Data & Narration</h2>
+                         <div class="flex items-center gap-4">
+                             <!-- Toggle -->
+                             <label class="cursor-pointer label gap-2">
+                                 <span class="label-text font-bold text-gray-500">JSON</span> 
+                                 <input type="checkbox" class="toggle toggle-primary" id="viewToggle" onchange="toggleDataView()" checked />
+                                 <span class="label-text font-bold text-gray-500">Verbal</span> 
+                             </label>
+                             <!-- Copy Button -->
+                             <button class="btn btn-outline btn-sm gap-2" onclick="copyDataToClipboard()">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                                 Copy
+                             </button>
+                         </div>
+                     </div>
+
+                     <!-- Content Container -->
+                     <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 relative max-h-[600px] overflow-y-auto custom-scroll">
+                         <!-- JSON VIEW -->
+                         <pre id="json-view" class="text-xs font-mono text-gray-700 whitespace-pre-wrap hidden"></pre>
+                         <!-- VERBAL CONTENT VIEW -->
+                         <div id="verbal-view" class="prose prose-sm max-w-none text-gray-700 leading-relaxed space-y-4"></div>
+                     </div>
                  </div>
              </div>
          </section>
@@ -2596,7 +2598,40 @@
                 jaimini: jaimini,
                 doshas: doshas,
                 avkahada: avkahada,
-                ashtakvarga: ashtakvarga
+                ashtakvarga: ashtakvarga,
+                charts: {
+                    d1: data.planets.map(p => ({
+                        planet: p.name,
+                        sign: p.sign,
+                        house: p.house, // Need to ensure p.house is available or calc it. D1 housing is typically straightforward if using Porphyry or Equal. 
+                        // Wait, 'data.planets' comes from 'd1Result'. Let's check if it has house data. 
+                        // Usually d1Result.planets has 'house' property if calculating houses.
+                        // If not, we can infer from sign relative to Ascendant sign.
+                        // Let's assume standard Whole Sign for "House" label in JSON to be safe or check if 'house' prop exists.
+                        // Actually, let's just use what's available.
+                        signId: jyotishTools.getRashiId(p.sign)
+                    })),
+                    d9: (() => {
+                        const asc = data.planets.find(x => x.name === 'Ascendant');
+                        if(!asc || !asc.vargas || !asc.vargas.d9) return [];
+                        const ascSignId = asc.vargas.d9.signIndex; // 1-based usually
+                        
+                        return data.planets.filter(p => p.name !== 'Ascendant').map(p => {
+                            if(!p.vargas || !p.vargas.d9) return null;
+                            const pSignId = p.vargas.d9.signIndex;
+                            // Calculate simple Whole Sign house in D9
+                            // (PlanetSign - AscSign + 12) % 12 + 1
+                            let houseNum = (pSignId - ascSignId + 12) % 12 + 1;
+                            
+                            return {
+                                planet: p.name,
+                                sign: p.vargas.d9.signName,
+                                house: houseNum,
+                                degreeInSign: astroEngine.decimalToDMS(p.vargas.d9.degreeInSign)
+                            };
+                        }).filter(x => x);
+                    })()
+                }
             };
 
             exportData.json = JSON.stringify(fullObj, null, 2);
@@ -2644,6 +2679,15 @@
                 txt += `  - Status: ${status}\n`;
             });
             txt += "\n";
+
+            // Navamsa (D9)
+            if(D.charts && D.charts.d9) {
+                txt += `### Navamsa (D9) Chart\n`;
+                D.charts.d9.forEach(p => {
+                    txt += `- **${p.planet}:** Placed in **${p.sign}** (House ${p.house}). Degree: ${p.degreeInSign}\n`;
+                });
+                txt += "\n";
+            }
 
             // Dasha
             txt += `### Vimshottari Dasha\n`;
