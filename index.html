@@ -12,9 +12,7 @@
     <!-- Tailwind + DaisyUI -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tom Select -->
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
     <!-- D3.js for Interactive Charts -->
     <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -346,29 +344,187 @@
             box-shadow: 0 0 6px rgba(255, 56, 92, 0.5);
         }
         
-        /* TomSelect Loading Spinner */
-        .ts-loading-spinner {
-            display: none;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            background: white;
+        /* Custom City Search Autocomplete */
+        .city-search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        
+        .city-search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            padding-right: 2.5rem;
+            font-size: 0.875rem;
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            border-radius: 0.75rem;
+            background: white;
+            color: #374151;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        
+        .city-search-input:focus {
+            border-color: #ff385c;
+            box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+        }
+        
+        .city-search-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .city-search-spinner {
             position: absolute;
-            top: 100%;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            border: 1.5px solid rgba(255, 56, 92, 0.15);
+            border-top-color: #ff385c;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: none;
+        }
+        
+        .city-search-wrapper.is-loading .city-search-spinner {
+            display: block;
+        }
+        
+        @keyframes spin {
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+        
+        .city-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
             left: 0;
             right: 0;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            font-size: 13px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            max-height: 320px;
+            overflow-y: auto;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            pointer-events: none;
+        }
+        
+        .city-dropdown.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .city-dropdown.hidden {
+            display: none;
+        }
+        
+        .city-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.15s ease;
+        }
+        
+        .city-option:last-child {
+            border-bottom: none;
+        }
+        
+        .city-option:hover,
+        .city-option.highlighted {
+            background: linear-gradient(135deg, rgba(255, 56, 92, 0.05) 0%, rgba(255, 107, 138, 0.08) 100%);
+        }
+        
+        .city-option-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.9375rem;
+        }
+        
+        .city-option-info {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        
+        .city-option-meta {
+            font-size: 0.6875rem;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+        
+        .city-dropdown-empty {
+            padding: 1.5rem;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+        
+        .city-dropdown-loading {
+            padding: 1.5rem;
+            text-align: center;
+            color: #ff385c;
+            font-size: 0.875rem;
+        }
+        
+        /* Dark mode support */
+        [data-theme="dark"] .city-search-input {
+            background: #1f2937;
+            border-color: #374151;
+            color: #f3f4f6;
+        }
+        
+        [data-theme="dark"] .city-search-input:focus {
+            border-color: #ff385c;
+            box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.2);
+        }
+        
+        [data-theme="dark"] .city-search-input::placeholder {
             color: #6b7280;
         }
         
-        [data-theme="dark"] .ts-loading-spinner {
-            background: #1a1a2e;
-            border-color: #3d3d55;
+        [data-theme="dark"] .city-dropdown {
+            background: #1f2937;
+            border-color: #374151;
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4);
+        }
+        
+        [data-theme="dark"] .city-option {
+            border-color: #374151;
+        }
+        
+        [data-theme="dark"] .city-option:hover,
+        [data-theme="dark"] .city-option.highlighted {
+            background: linear-gradient(135deg, rgba(255, 56, 92, 0.15) 0%, rgba(255, 107, 138, 0.1) 100%);
+        }
+        
+        [data-theme="dark"] .city-option-name {
+            color: #f3f4f6;
+        }
+        
+        [data-theme="dark"] .city-option-info {
             color: #9ca3af;
+        }
+        
+        [data-theme="dark"] .city-option-meta {
+            color: #6b7280;
+        }
+        
+        /* Custom scrollbar for dropdown */
+        .city-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .city-dropdown::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        [data-theme="dark"] .city-dropdown::-webkit-scrollbar-thumb {
+            background: #4b5563;
         }
         
         /* Custom Scrollbar for tables */
@@ -978,9 +1134,12 @@
                         <div class="space-y-4">
                              <div class="form-control w-full">
                                 <label class="label pb-1"><span class="label-text text-xs font-bold uppercase text-gray-400 tracking-wider">Place of Birth</span></label>
-                                <select id="citySelect" class="w-full" placeholder="Search City..." autocomplete="off">
-                                    <option value="">Search City...</option>
-                                </select>
+                                <div class="city-search-wrapper" id="citySearchWrapper">
+                                    <input type="text" id="citySearchInput" class="city-search-input" 
+                                           placeholder="Search city (e.g. Mumbai, New York)" autocomplete="off">
+                                    <div class="city-search-spinner"></div>
+                                    <div id="cityDropdown" class="city-dropdown hidden"></div>
+                                </div>
                                 <!-- HIDDEN FIELDS AUTO-POPULATED -->
                                 <input type="hidden" id="selectedLat">
                                 <input type="hidden" id="selectedLng">
@@ -1587,7 +1746,6 @@
         import jyotishTools from './JyotishTools.js';
         import kpEventEngine, { EVENT_TYPES } from './KPEventEngine.js';
 
-        let tsControl;
         
         // Global State
         let calendarData = [];           // Generated calendar array
@@ -1689,115 +1847,208 @@
                 UIState.init();
                 await astroEngine.init();
                 
-                // Initialize TomSelect with Remote Data (Open-Meteo)
-                tsControl = new TomSelect("#citySelect", {
-                    valueField: 'id',
-                    labelField: 'display_name',
-                    searchField: ['display_name'],
-                    maxOptions: 10,
-                    create: false,
-                    placeholder: "Search City (e.g. Mumbai, New York)",
-                    optgroups: [
-                        {value: 'city', label: 'Cities'}
-                    ],
-                    render: {
-                        option: function(data, escape) {
-                            const popText = data.population > 0 
-                                ? `Pop: ${(data.population / 1000).toFixed(0)}K` 
-                                : 'Pop: N/A';
-                            const distText = data.district ? `${escape(data.district)}` : '';
-                            const elevText = data.elevation > 0 ? ` • ${data.elevation}m` : '';
+                // Custom City Search Autocomplete
+                (function initCitySearch() {
+                    const wrapper = document.getElementById('citySearchWrapper');
+                    const input = document.getElementById('citySearchInput');
+                    const dropdown = document.getElementById('cityDropdown');
+                    
+                    let cities = [];
+                    let highlightedIndex = -1;
+                    let debounceTimer = null;
+                    let selectedCity = null;
+                    
+                    // Escape HTML to prevent XSS
+                    function escapeHtml(text) {
+                        const div = document.createElement('div');
+                        div.textContent = text || '';
+                        return div.innerHTML;
+                    }
+                    
+                    // Format population
+                    function formatPop(pop) {
+                        if (!pop || pop <= 0) return 'Pop: N/A';
+                        if (pop >= 1000000) return `Pop: ${(pop / 1000000).toFixed(1)}M`;
+                        return `Pop: ${(pop / 1000).toFixed(0)}K`;
+                    }
+                    
+                    // Render dropdown options
+                    function renderOptions() {
+                        if (cities.length === 0) {
+                            dropdown.innerHTML = '<div class="city-dropdown-empty">No cities found</div>';
+                            return;
+                        }
+                        
+                        dropdown.innerHTML = cities.map((city, i) => {
+                            const isHighlighted = i === highlightedIndex;
+                            const popText = formatPop(city.population);
+                            const elevText = city.elevation > 0 ? ` • ${city.elevation}m` : '';
+                            const distText = city.district ? `, ${escapeHtml(city.district)}` : '';
                             
-                            return `<div class="py-2 px-2 border-b border-gray-100">
-                                <div class="font-bold text-gray-800">${escape(data.n)}</div>
-                                <div class="text-xs text-gray-500 mt-0.5">
-                                    ${escape(data.st || '')}${distText ? `, ${distText}` : ''} • ${escape(data.country || '')}
+                            return `
+                                <div class="city-option ${isHighlighted ? 'highlighted' : ''}" data-index="${i}">
+                                    <div class="city-option-name">${escapeHtml(city.name)}</div>
+                                    <div class="city-option-info">${escapeHtml(city.admin1 || '')}${distText} • ${escapeHtml(city.country || '')}</div>
+                                    <div class="city-option-meta">${popText}${elevText}</div>
                                 </div>
-                                <div class="text-xs text-gray-400 mt-0.5">
-                                    ${popText}${elevText}
-                                </div>
-                            </div>`;
-                        },
-                        item: function(data, escape) {
-                            return `<div>${escape(data.display_name)}</div>`;
-                        }
-                    },
-                    load: function(query, callback) {
-                        if (!query.length) return callback();
-                        
-                        // Show loading spinner in dropdown
-                        const wrapper = this.wrapper;
-                        let spinner = wrapper.querySelector('.ts-loading-spinner');
-                        if (!spinner) {
-                            spinner = document.createElement('div');
-                            spinner.className = 'ts-loading-spinner';
-                            spinner.innerHTML = `
-                                <div class="orbital-spinner-sm">
-                                    <div class="orbit"></div>
-                                    <div class="orbit"></div>
-                                    <div class="core"></div>
-                                </div>
-                                <span>Searching cities...</span>
                             `;
-                            wrapper.appendChild(spinner);
-                        }
-                        spinner.style.display = 'flex';
+                        }).join('');
                         
-                        const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`;
-                        fetch(url)
-                            .then(response => response.json())
-                            .then(json => {
-                                spinner.style.display = 'none';
-                                if (!json.results) return callback();
-                                
-                                // Clear stale options from previous searches to prevent duplicates
-                                // Preserve currently selected option if it exists
-                                const currentVal = this.getValue();
-                                const currentOption = currentVal ? this.options[currentVal] : null;
-                                this.clearOptions();
-                                if (currentOption) {
-                                    this.addOption(currentOption);
-                                }
-                                
-                                // Sort by population (descending) to prioritize major cities
-                                const sortedResults = json.results
-                                    .sort((a, b) => (b.population || 0) - (a.population || 0));
-                                
-                                // Use a Map to deduplicate by the stable API provided ID
-                                const uniqueResults = new Map();
+                        // Attach click handlers
+                        dropdown.querySelectorAll('.city-option').forEach(opt => {
+                            opt.addEventListener('click', () => {
+                                const index = parseInt(opt.dataset.index);
+                                selectCity(cities[index]);
+                            });
+                            opt.addEventListener('mouseenter', () => {
+                                highlightedIndex = parseInt(opt.dataset.index);
+                                updateHighlight();
+                            });
+                        });
+                    }
+                    
+                    // Update highlight without full re-render
+                    function updateHighlight() {
+                        dropdown.querySelectorAll('.city-option').forEach((opt, i) => {
+                            opt.classList.toggle('highlighted', i === highlightedIndex);
+                        });
+                    }
+                    
+                    // Select a city
+                    function selectCity(city) {
+                        selectedCity = city;
+                        input.value = `${city.name}${city.admin1 ? ', ' + city.admin1 : ''}, ${city.country}`;
+                        
+                        // Populate hidden fields
+                        document.getElementById('selectedLat').value = city.latitude;
+                        document.getElementById('selectedLng').value = city.longitude;
+                        document.getElementById('timezone').value = city.timezone;
+                        
+                        console.log('Selected city:', city);
+                        closeDropdown();
+                    }
+                    
+                    // Open/close dropdown
+                    function openDropdown() {
+                        dropdown.classList.remove('hidden');
+                        // Force reflow for animation
+                        dropdown.offsetHeight;
+                        dropdown.classList.add('visible');
+                    }
+                    
+                    function closeDropdown() {
+                        dropdown.classList.remove('visible');
+                        setTimeout(() => {
+                            if (!dropdown.classList.contains('visible')) {
+                                dropdown.classList.add('hidden');
+                            }
+                        }, 150);
+                        highlightedIndex = -1;
+                    }
+                    
+                    // Set loading state
+                    function setLoading(loading) {
+                        wrapper.classList.toggle('is-loading', loading);
+                    }
+                    
+                    // Fetch cities from API
+                    async function fetchCities(query) {
+                        if (!query || query.length < 2) {
+                            cities = [];
+                            closeDropdown();
+                            return;
+                        }
+                        
+                        setLoading(true);
+                        
+                        try {
+                            const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`;
+                            const response = await fetch(url);
+                            const json = await response.json();
+                            
+                            if (!json.results || json.results.length === 0) {
+                                cities = [];
+                            } else {
+                                // Sort by population and deduplicate
+                                const sortedResults = json.results.sort((a, b) => (b.population || 0) - (a.population || 0));
+                                const uniqueMap = new Map();
                                 sortedResults.forEach(c => {
-                                    if (!uniqueResults.has(c.id)) {
-                                        uniqueResults.set(c.id, {
-                                            id: String(c.id), // Use stable ID
-                                            n: c.name,
-                                            st: c.admin1,
-                                            country: c.country,
-                                            display_name: `${c.name}${c.admin1 ? ', ' + c.admin1 : ''}, ${c.country}`,
-                                            lat: c.latitude,
-                                            lng: c.longitude,
-                                            tz: c.timezone,
-                                            population: c.population || 0,
-                                            district: c.admin2 || '',
-                                            elevation: c.elevation || 0
-                                        });
+                                    if (!uniqueMap.has(c.id)) {
+                                        uniqueMap.set(c.id, c);
                                     }
                                 });
-                                callback(Array.from(uniqueResults.values()));
-                            }).catch(() => {
-                                spinner.style.display = 'none';
-                                callback();
-                            });
-                    },
-                    onChange: (value) => {
-                        if(value && tsControl.options[value]) {
-                            const data = tsControl.options[value];
-                            document.getElementById('selectedLat').value = data.lat;
-                            document.getElementById('selectedLng').value = data.lng;
-                            document.getElementById('timezone').value = data.tz;
-                            console.log("Selected:", data);
+                                cities = Array.from(uniqueMap.values());
+                            }
+                            
+                            highlightedIndex = cities.length > 0 ? 0 : -1;
+                            renderOptions();
+                            openDropdown();
+                            
+                        } catch (err) {
+                            console.error('City search error:', err);
+                            cities = [];
+                            dropdown.innerHTML = '<div class="city-dropdown-empty">Search failed. Try again.</div>';
+                            openDropdown();
+                        } finally {
+                            setLoading(false);
                         }
                     }
-                });
+                    
+                    // Input handler with debounce
+                    input.addEventListener('input', (e) => {
+                        const query = e.target.value.trim();
+                        
+                        // Clear selected city if user types
+                        selectedCity = null;
+                        document.getElementById('selectedLat').value = '';
+                        document.getElementById('selectedLng').value = '';
+                        document.getElementById('timezone').value = '';
+                        
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => fetchCities(query), 300);
+                    });
+                    
+                    // Keyboard navigation
+                    input.addEventListener('keydown', (e) => {
+                        if (!dropdown.classList.contains('visible')) return;
+                        
+                        switch (e.key) {
+                            case 'ArrowDown':
+                                e.preventDefault();
+                                highlightedIndex = Math.min(highlightedIndex + 1, cities.length - 1);
+                                updateHighlight();
+                                break;
+                            case 'ArrowUp':
+                                e.preventDefault();
+                                highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                                updateHighlight();
+                                break;
+                            case 'Enter':
+                                e.preventDefault();
+                                if (highlightedIndex >= 0 && cities[highlightedIndex]) {
+                                    selectCity(cities[highlightedIndex]);
+                                }
+                                break;
+                            case 'Escape':
+                                closeDropdown();
+                                break;
+                        }
+                    });
+                    
+                    // Focus shows dropdown if there are results
+                    input.addEventListener('focus', () => {
+                        if (cities.length > 0 && input.value.length >= 2) {
+                            openDropdown();
+                        }
+                    });
+                    
+                    // Click outside closes dropdown
+                    document.addEventListener('click', (e) => {
+                        if (!wrapper.contains(e.target)) {
+                            closeDropdown();
+                        }
+                    });
+                })();
 
                 loader.classList.add('hidden');
                 document.getElementById('calcBtn').disabled = false;
@@ -2331,7 +2582,7 @@
                     name: document.getElementById('name').value,
                     dob: document.getElementById('dob').value,
                     tob: document.getElementById('tob').value,
-                    place: (tsControl && tsControl.getValue() !== "") ? tsControl.options[tsControl.getValue()].n : "Unknown",
+                    place: document.getElementById('citySearchInput').value || "Unknown",
                 },
                 meta: data.meta,
                 panchanga: data.panchanga,
@@ -2672,7 +2923,10 @@
             const name = document.getElementById('name').value.trim();
             const dob = document.getElementById('dob').value;
             const tob = document.getElementById('tob').value;
-            const cityValue = tsControl ? tsControl.getValue() : '';
+            const lat = document.getElementById('selectedLat').value;
+            const lng = document.getElementById('selectedLng').value;
+            const tz = document.getElementById('timezone').value;
+            const cityName = document.getElementById('citySearchInput').value;
             
             if (!name) {
                 alert('Please enter a name to save the profile.');
@@ -2683,11 +2937,10 @@
                 return;
             }
             
-            // Get city data
+            // Get city data from hidden fields and input
             let cityData = null;
-            if (cityValue && tsControl.options[cityValue]) {
-                const c = tsControl.options[cityValue];
-                cityData = { id: cityValue, n: c.n, lat: c.lat, lng: c.lng, tz: c.tz, st: c.st };
+            if (lat && lng && tz && cityName) {
+                cityData = { name: cityName, lat: lat, lng: lng, tz: tz };
             }
             
             const profile = {
@@ -2743,17 +2996,14 @@
             document.getElementById('calcMode').value = p.calcMode || '16';
             
             // Set city if available
-            if (p.city && tsControl) {
-                // Add the option if not present
-                if (!tsControl.options[p.city.id]) {
-                    tsControl.addOption(p.city);
-                }
-                tsControl.setValue(p.city.id, true);
+            if (p.city) {
+                // Set the input value directly
+                document.getElementById('citySearchInput').value = p.city.name || '';
                 
                 // Set hidden fields
-                document.getElementById('selectedLat').value = p.city.lat;
-                document.getElementById('selectedLng').value = p.city.lng;
-                document.getElementById('timezone').value = p.city.tz;
+                document.getElementById('selectedLat').value = p.city.lat || '';
+                document.getElementById('selectedLng').value = p.city.lng || '';
+                document.getElementById('timezone').value = p.city.tz || '';
             }
             
             // Close dropdown
