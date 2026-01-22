@@ -2614,20 +2614,23 @@
                     d9: (() => {
                         const asc = data.planets.find(x => x.name === 'Ascendant');
                         if(!asc || !asc.vargas || !asc.vargas.d9) return [];
-                        const ascSignId = asc.vargas.d9.signIndex; // 1-based usually
+                        const ascSignId = asc.vargas.d9.signId;
                         
                         return data.planets.filter(p => p.name !== 'Ascendant').map(p => {
                             if(!p.vargas || !p.vargas.d9) return null;
-                            const pSignId = p.vargas.d9.signIndex;
+                            const pSignId = p.vargas.d9.signId;
                             // Calculate simple Whole Sign house in D9
                             // (PlanetSign - AscSign + 12) % 12 + 1
                             let houseNum = (pSignId - ascSignId + 12) % 12 + 1;
                             
+                            // Degree in D9 sign is longitude % 30
+                            const degVal = p.vargas.d9.longitude % 30;
+
                             return {
                                 planet: p.name,
                                 sign: p.vargas.d9.signName,
                                 house: houseNum,
-                                degreeInSign: astroEngine.decimalToDMS(p.vargas.d9.degreeInSign)
+                                degreeInSign: astroEngine.decimalToDMS(degVal)
                             };
                         }).filter(x => x);
                     })()
