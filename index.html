@@ -303,6 +303,74 @@
             50% { transform: scale(1.2); opacity: 0.8; }
         }
         
+        /* Small Orbital Spinner for inline loading */
+        .orbital-spinner-sm {
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+        
+        .orbital-spinner-sm .orbit {
+            position: absolute;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            border-top-color: #ff385c;
+            animation: orbit-spin 1s linear infinite;
+        }
+        
+        .orbital-spinner-sm .orbit:nth-child(1) {
+            width: 24px;
+            height: 24px;
+            top: 0;
+            left: 0;
+        }
+        
+        .orbital-spinner-sm .orbit:nth-child(2) {
+            width: 16px;
+            height: 16px;
+            top: 4px;
+            left: 4px;
+            animation-duration: 0.7s;
+            animation-direction: reverse;
+            border-top-color: #ff6b8a;
+        }
+        
+        .orbital-spinner-sm .core {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            top: 8px;
+            left: 8px;
+            background: linear-gradient(135deg, #ff385c 0%, #ff6b8a 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255, 56, 92, 0.5);
+        }
+        
+        /* TomSelect Loading Spinner */
+        .ts-loading-spinner {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        [data-theme="dark"] .ts-loading-spinner {
+            background: #1a1a2e;
+            border-color: #3d3d55;
+            color: #9ca3af;
+        }
+        
         /* Custom Scrollbar for tables */
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -1656,10 +1724,30 @@
                     },
                     load: function(query, callback) {
                         if (!query.length) return callback();
+                        
+                        // Show loading spinner in dropdown
+                        const wrapper = this.wrapper;
+                        let spinner = wrapper.querySelector('.ts-loading-spinner');
+                        if (!spinner) {
+                            spinner = document.createElement('div');
+                            spinner.className = 'ts-loading-spinner';
+                            spinner.innerHTML = `
+                                <div class="orbital-spinner-sm">
+                                    <div class="orbit"></div>
+                                    <div class="orbit"></div>
+                                    <div class="core"></div>
+                                </div>
+                                <span>Searching cities...</span>
+                            `;
+                            wrapper.appendChild(spinner);
+                        }
+                        spinner.style.display = 'flex';
+                        
                         const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`;
                         fetch(url)
                             .then(response => response.json())
                             .then(json => {
+                                spinner.style.display = 'none';
                                 if (!json.results) return callback();
                                 
                                 // Clear stale options from previous searches to prevent duplicates
@@ -1696,6 +1784,7 @@
                                 });
                                 callback(Array.from(uniqueResults.values()));
                             }).catch(() => {
+                                spinner.style.display = 'none';
                                 callback();
                             });
                     },
